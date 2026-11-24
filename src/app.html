@@ -320,8 +320,18 @@ function buildScenes() {
   return s;
 }
 function timeline() {
-  const sc = buildScenes(); let t = 0;
-  sc.forEach(s => { const v = state.voices[s.key]; s.vdur = v ? v.duration : 0; s.dur = Math.max(s.base, v ? v.duration + 1.0 : 0); s.start = t; t += s.dur; });
+  // Voices are laid one after another. A long voice line may continue into the next scene,
+  // so the intro never freezes; later scenes stretch to fit their own voice.
+  const sc = buildScenes(); let t = 0, vc = 0; const INTRO_MAX = 3.4;
+  sc.forEach((s, i) => {
+    s.start = t; const v = state.voices[s.key];
+    if (v) { s.vStart = Math.max(t + .35, vc + .25); s.vEnd = s.vStart + v.duration; vc = s.vEnd; } else { s.vStart = s.vEnd = 0; }
+    s.vdur = v ? v.duration : 0;
+    const need = v ? s.vEnd + .6 - t : 0;
+    s.dur = s.type === 'intro' ? Math.max(s.base, Math.min(need, INTRO_MAX)) : Math.max(s.base, need);
+    if (i === sc.length - 1) s.dur = Math.max(s.dur, vc + .9 - t);
+    t += s.dur;
+  });
   return { scenes: sc, total: t };
 }
 function spokenPhone(p) { const d = (p || '').replace(/\D/g, ''); if (d.length === 10) return d.slice(0, 5).split('').join(' ') + ', ' + d.slice(5).split('').join(' '); return d.split('').join(' '); }
@@ -330,7 +340,7 @@ function defaultLine(s) {
   const b = state.brand, p = state.prop, ta = state.lang === 'ta';
   const c = chips().join(', '), f = feats().join(', '), bd = p.badge && !/\bsold\b/i.test(p.badge) ? ' ' + p.badge + '!' : '';
   switch (s.type) {
-    case 'intro': return ta ? `வணக்கம்! ${b.name || ''} வழங்கும், ${p.location}-ல் அழகான ${p.title}.` : `${b.name || 'We'} present${b.name ? 's' : ''} a beautiful ${p.title} in ${p.location}.`;
+    case 'intro': return ta ? `${b.name || ''} வழங்கும் ${p.title}, ${p.location}.` : `${b.name ? b.name + ' presents' : 'Presenting'} ${p.title} in ${p.location}.`;
     case 'price': return (ta ? `இதன் விலை ${p.price} மட்டுமே. ${c}.` : `Priced at just ${p.price}. ${c}.`) + bd;
     case 'photo': return [s.photo.title, s.photo.sub].filter(Boolean).join('. ') + (s.photo.title || s.photo.sub ? '.' : '');
     case 'features': return ta ? `இதன் சிறப்புகள்: ${f}.` : `Key highlights: ${f}.`;
@@ -547,13 +557,15 @@ function renderScene(ctx, s, lt, t) {
   ctx.save(); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H);
   RENDER[s.type](ctx, lt, s);
   if (TH().frame) frame(ctx);
-  if (lt > .3 && lt < s.dur + .1) subtitle(ctx, state.lines[s.key]);
+  if (state.subs && _TL) { const sp = _TL.scenes.find(x => x.vEnd && t >= x.vStart - .2 && t <= x.vEnd + .3); subtitle(ctx, sp ? state.lines[sp.key] : (lt > .3 ? state.lines[s.key] : '')); }
   ctx.restore();
 }
+let _TL = null;
 let _oc = null;
 const XF = () => TH().trans === 'fade' ? .4 : .45;
 function sceneAt(TL, t) { const sc = TL.scenes; let i = sc.findIndex(s => t >= s.start && t < s.start + s.dur); return i < 0 ? sc.length - 1 : i; }
 function drawFrame(ctx, t, TL) {
+  _TL = TL;
   const sc = TL.scenes, i = sceneAt(TL, t), s = sc[i], lt = t - s.start, xf = XF();
   if (i > 0 && lt < xf) {
     const pv = sc[i - 1], e = ease(lt / xf), tr = TH().trans;
@@ -800,13 +812,13 @@ async function buildAudio(TL) {
       const src = oc.createBufferSource(); src.buffer = buf; src.loop = state.music.mode === 'upload';
       const g = oc.createGain(), base = state.music.vol * (state.music.mode === 'upload' ? .8 : 1), duck = base * .3;
       g.gain.setValueAtTime(0, 0); g.gain.linearRampToValueAtTime(base, .4);
-      for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const a = s.start + .35, b = a + v.duration;
+      for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const a = s.vStart, b = s.vEnd;
         g.gain.setValueAtTime(base, Math.max(.41, a - .3)); g.gain.linearRampToValueAtTime(duck, a); g.gain.setValueAtTime(duck, b); g.gain.linearRampToValueAtTime(base, b + .4); }
       g.gain.setValueAtTime(base, Math.max(.5, dur - 2)); g.gain.linearRampToValueAtTime(0, dur);
       src.connect(g).connect(oc.destination); src.start(0);
     }
   }
-  for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const src = oc.createBufferSource(); src.buffer = v; src.connect(oc.destination); src.start(s.start + .35); }
+  for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const src = oc.createBufferSource(); src.buffer = v; src.connect(oc.destination); src.start(s.vStart); }
   return await oc.startRendering();
 }
 
