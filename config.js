@@ -1,2 +1,2 @@
-// ↓↓ Paste your Cloudflare Worker URL here (no slash at the end), then commit.
-window.REEL_API_URL = 'https://reel-api.YOUR-SUBDOMAIN.workers.dev';
+// ↓↓ Your Cloudflare Worker URL (no slash at the end).
+window.REEL_API_URL = 'https://reel-api.thinkthroughtechnology.workers.dev';
