@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property Reel Maker · Think Through Technology</title>
+<style>
+@font-face{font-family:Poppins;font-weight:400;src:url(data:font/ttf;base64,__FONT_REG__) format('truetype')}
+@font-face{font-family:Poppins;font-weight:500;src:url(data:font/ttf;base64,__FONT_MED__) format('truetype')}
+@font-face{font-family:Poppins;font-weight:700;src:url(data:font/ttf;base64,__FONT_BOLD__) format('truetype')}
+@font-face{font-family:"Playfair Display";font-weight:700;src:url(data:font/woff2;base64,__FONT_SERIF__) format('woff2')}
+:root{--navy:#0E1B2A;--gold:#E8BB5C;--bg:#F4F6F9;--card:#fff;--line:#E3E7ED;--muted:#6B7685;--ink:#17202B;--ok:#1F8A5B;--err:#C2412D}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Poppins,system-ui,"Noto Sans Tamil","Nirmala UI",sans-serif}
+header{background:var(--navy);color:#fff;padding:12px 22px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+header .logo{width:34px;height:34px;border-radius:9px;background:var(--gold);display:grid;place-items:center;color:var(--navy);font-weight:700;overflow:hidden}
+header .logo img{width:100%;height:100%;object-fit:contain;background:#fff}
+header h1{font-size:17px;margin:0;font-weight:600}
+header small{opacity:.65;font-size:12px;display:block;margin-top:-2px}
+header .sp{flex:1}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;text-decoration:none;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.gold{background:var(--gold);color:var(--navy)}
+.btn.green{background:var(--ok)}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--line)}
+header .btn.ghost{color:#fff;border-color:rgba(255,255,255,.3)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn.icon{padding:6px 9px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;max-width:1240px;margin:0 auto;padding:22px}
+.form{display:flex;flex-direction:column;gap:16px}
+.side{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px}
+.card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.card h2 .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;display:grid;place-items:center;flex:none}
+.card p.hint{margin:0 0 14px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:#3B4654}
+input[type=text],input[type=password],input[type=tel],input[type=number],textarea,select{font:inherit;font-size:14px;font-weight:400;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;color:var(--ink);width:100%}
+textarea{resize:vertical;min-height:70px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#7C93B3}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* account */
+.acct{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.acct .lg{width:56px;height:56px;border-radius:14px;background:#F1F3F6;display:grid;place-items:center;overflow:hidden;font-weight:700;color:var(--navy);flex:none}
+.acct .lg img{max-width:100%;max-height:100%}
+.acct .who{flex:1}.acct .who b{font-size:16px;display:block}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:20px;padding:3px 10px;margin:2px 4px 2px 0}
+.chip.active{background:#E3F4EC;color:var(--ok)}.chip.due{background:#FDF1DC;color:#B7791F}.chip.grace{background:#FDE7D8;color:#B5541B}.chip.expired,.chip.paused{background:#FBE4E0;color:var(--err)}.chip.plan{background:#EEF1F6;color:var(--navy)}
+.meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.meter{font-size:12.5px;color:var(--muted)}.meter .t{display:flex;justify-content:space-between}
+.meter .tr{height:7px;border-radius:5px;background:#EDF0F4;overflow:hidden;margin-top:4px}.meter .tr i{display:block;height:100%;background:var(--navy);border-radius:5px}
+.banner{border-radius:12px;padding:10px 14px;font-size:13.5px;display:none;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.banner.due{display:flex;background:#FFF5E1;border:1px solid #F3D9A6;color:#7A5410}
+.banner.grace{display:flex;background:#FDECE3;border:1px solid #F2C4AA;color:#8A3B14}
+/* photos */
+.drop{border:2px dashed #C9D2DE;border-radius:14px;padding:22px;text-align:center;color:var(--muted);cursor:pointer;background:#FAFBFD}
+.drop.over{border-color:var(--gold);background:#FFF9EC}
+.drop b{color:var(--navy)}
+.photos{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ph{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.ph .th{position:relative}
+.ph img{width:78px;height:104px;object-fit:cover;border-radius:8px;background:#eee;display:block}
+.ph .vb{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.7);color:#fff;font-size:10.5px;font-weight:600;border-radius:6px;padding:1px 6px}
+.ph .f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ph .f input,.ph .f select{padding:6px 8px;font-size:13px}
+.ph .f .full{grid-column:1/-1}
+.ph .f label{font-size:11.5px;gap:3px}
+.ph .tools{display:flex;flex-direction:column;gap:5px}
+.badge{display:inline-block;font-size:11px;font-weight:700;color:var(--navy);background:#FFF1CF;border-radius:6px;padding:2px 7px;margin-bottom:4px}
+/* styles */
+.styles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.sty{border:1.5px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;background:#fff;font:inherit;text-align:left}
+.sty i{display:block;height:34px;border-radius:7px;margin-bottom:6px}
+.sty b{font-size:12.5px;display:block}
+.sty.on{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy) inset}
+/* voice */
+.vrow{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:#fff}
+.vrow .top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.vrow .top b{font-size:13px}
+.vrow .dur{font-size:12px;color:var(--muted);margin-left:auto}
+.vrow .dur.has{color:var(--ok);font-weight:600}
+.vrow textarea{min-height:52px;font-size:13.5px}
+.vrow .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.rec{background:var(--err)!important;color:#fff!important}
+.tabs{display:flex;background:#EEF1F5;border-radius:10px;padding:3px;gap:3px}
+.tabs button{flex:1;border:0;background:transparent;padding:7px 10px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.aibox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:#FBFCFD}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+.warn{font-size:12.5px;background:#FFF5E6;border:1px solid #F3D9A6;color:#7A5410;border-radius:10px;padding:8px 10px;margin-top:10px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;flex-direction:row}
+.toggle input{width:16px;height:16px;accent-color:var(--navy)}
+.vol{display:flex;align-items:center;gap:10px;font-size:13px}
+.vol input{flex:1;accent-color:var(--navy)}
+/* preview */
+.preview{background:#0B1520;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.preview canvas{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:12px;background:#000;display:block}
+.pctl{display:flex;gap:10px;align-items:center;width:100%;max-width:300px;color:#cfd7e2;font-size:12px}
+.pctl input[type=range]{flex:1;accent-color:var(--gold)}
+.pbtn{width:36px;height:36px;border-radius:50%;border:0;background:var(--gold);color:var(--navy);font-size:15px;cursor:pointer;flex:none}
+.exp .bar{height:10px;border-radius:6px;background:#E8ECF1;overflow:hidden;margin:10px 0 6px}
+.exp .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),#F3D38E);transition:width .15s}
+.exp .status{font-size:12.5px;color:var(--muted);min-height:18px}
+.exp video{width:100%;border-radius:12px;margin-top:10px;background:#000;max-height:420px}
+.exp .res{display:none;flex-direction:column;gap:8px}
+.stat{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:4px}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(9,17,27,.86);display:none;align-items:center;justify-content:center;z-index:30;padding:20px;backdrop-filter:blur(4px)}
+.ov.on{display:flex}
+.ovc{background:#fff;border-radius:20px;padding:26px;width:100%;max-width:400px;text-align:center}
+.ovc .big{width:64px;height:64px;border-radius:16px;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-size:28px;font-weight:700;margin:0 auto 12px;overflow:hidden}
+.ovc .big img{width:100%;height:100%;object-fit:contain;background:#fff}
+.ovc h2{margin:0 0 6px;font-size:20px}
+.ovc p{margin:0 0 16px;color:var(--muted);font-size:14px}
+.ovc form{display:flex;flex-direction:column;gap:10px;text-align:left}
+.ovc .err{color:var(--err);font-size:13px;min-height:18px;text-align:center}
+.ovc .btn{justify-content:center}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;display:none;z-index:40;max-width:90vw;text-align:center}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;padding:14px}
+  .side{position:static;order:-1}
+  .grid,.meters{grid-template-columns:1fr}
+  .styles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  header{padding:12px 14px}
+  header small{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="hLogo">▶</div>
+  <div><h1 id="hName">Property Reel Maker</h1><small>Think Through Technology</small></div>
+  <div class="sp"></div>
+  <button class="btn ghost sm" id="demoBtn">Load sample</button>
+  <button class="btn ghost sm" id="logoutBtn">Log out</button>
+</header>
+
+<div class="wrap">
+<div class="form">
+
+  <div class="banner" id="subBanner"><span id="subBannerTxt"></span><button class="btn gold sm" data-renew>Renew now</button></div>
+
+  <!-- ACCOUNT -->
+  <section class="card">
+    <div class="acct">
+      <div class="lg" id="aLogo"></div>
+      <div class="who"><b id="aName">—</b><div id="aChips"></div></div>
+      <button class="btn gold sm" data-renew id="renewBtn">Renew</button>
+    </div>
+    <div class="meters" id="aMeters"></div>
+    <div class="note" id="aExtra"></div>
+  </section>
+
+  <!-- 1 PROPERTY -->
+  <section class="card">
+    <h2><span class="n">1</span>Property details</h2>
+    <p class="hint">This text appears on screen and is used to write the voice script.</p>
+    <div class="styles" id="styleBox"></div>
+    <div class="grid">
+      <label>Top label<input type="text" data-k="prop.label" placeholder="NEW LISTING"></label>
+      <label>Location<input type="text" data-k="prop.location" placeholder="Mangadu, Chennai"></label>
+      <label class="full">Property title<input type="text" data-k="prop.title" placeholder="2 BHK Independent House"></label>
+      <label>Price<input type="text" data-k="prop.price" placeholder="₹ 48 Lakhs"></label>
+      <label>Price note<input type="text" data-k="prop.priceNote" placeholder="Slightly negotiable"></label>
+      <label class="full">Quick facts (comma separated, max 3)<input type="text" data-k="prop.chips" placeholder="1,150 sq ft, East facing, Ready to move"></label>
+      <label class="full">Highlights (one per line, max 6)<textarea data-k="prop.features" placeholder="DTCP Approved&#10;30 ft Road&#10;School 500 m"></textarea></label>
+      <label class="full">Urgency badge (optional)<input type="text" data-k="prop.badge" list="badgeList" placeholder="e.g. Only 2 plots left · Price drop · SOLD"></label>
+      <datalist id="badgeList"><option>Only 2 plots left</option><option>Price drop</option><option>Hot deal</option><option>New launch</option><option>Few units left</option><option>SOLD</option></datalist>
+    </div>
+  </section>
+
+  <!-- 2 PHOTOS -->
+  <section class="card">
+    <h2><span class="n">2</span>Photos &amp; video clips</h2>
+    <p class="hint">The first item is the cover (shown with the price). Add short phone clips (5–8 s) for a real walkthrough feel.</p>
+    <div class="drop" id="drop"><b>Tap to add photos or videos</b> or drag them here<br><small>JPG / PNG / MP4 · 4–10 items works best</small></div>
+    <input type="file" id="photoFile" accept="image/*,video/*" multiple hidden>
+    <div class="photos" id="photoList"></div>
+  </section>
+
+  <!-- 3 VOICE -->
+  <section class="card">
+    <h2><span class="n">3</span>Voice-over</h2>
+    <p class="hint">One line for each scene. Each scene stays on screen for as long as its voice line plays.</p>
+    <div class="row" style="justify-content:space-between">
+      <div class="tabs" id="langTabs" style="min-width:220px"><button data-lang="en" class="on">English</button><button data-lang="ta">தமிழ்</button></div>
+      <button class="btn ghost sm" id="regen">↻ Rewrite script from details</button>
+    </div>
+    <label class="toggle" style="margin-top:12px"><input type="checkbox" id="subsChk"> Show voice text as subtitles</label>
+    <div class="aibox" id="aiBox"></div>
+    <div class="note">You can also tap <b>Record</b> to record a line with your mic, or <b>Upload</b> an audio file recorded on a phone.</div>
+    <div id="voiceRows"></div>
+  </section>
+
+  <!-- 4 MUSIC -->
+  <section class="card">
+    <h2><span class="n">4</span>Background music</h2>
+    <div class="tabs" id="musicTabs" style="margin:10px 0 12px"><button data-m="builtin" class="on">Built-in (free)</button><button data-m="upload">My music</button><button data-m="none">No music</button></div>
+    <div id="musicUp" style="display:none" class="row"><button class="btn ghost sm" id="musicBtn">Choose MP3</button><span class="note" id="musicName">No file chosen</span><input type="file" id="musicFile" accept="audio/*" hidden></div>
+    <div class="vol"><span>Volume</span><input type="range" id="musicVol" min="0" max="100" value="70"><span id="musicVolV">70%</span></div>
+    <div class="note">Music is lowered automatically when the voice is speaking.</div>
+  </section>
+</div>
+
+<!-- SIDE -->
+<div class="side">
+  <div class="preview">
+    <canvas id="pv" width="1080" height="1920"></canvas>
+    <div class="pctl"><button class="pbtn" id="playBtn">▶</button><input type="range" id="scrub" min="0" max="1000" value="0"><span id="tlbl">0.0s</span></div>
+    <div style="color:#8a97a8;font-size:11.5px">Preview is silent · sound is added in the MP4</div>
+  </div>
+  <div class="card exp">
+    <h2>🎬 Create video</h2>
+    <div class="stat"><span>Length</span><b id="lenLbl">—</b></div>
+    <div class="stat"><span>Format</span><b>1080×1920 · MP4 · 30 fps</b></div>
+    <div class="stat"><span>Reels left this month</span><b id="reelsLeft">—</b></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="status" id="status"></div>
+    <button class="btn gold" id="exportBtn" style="width:100%;justify-content:center;margin-top:6px">Create MP4</button>
+    <div class="res" id="res">
+      <video id="outVid" controls playsinline></video>
+      <div class="row"><a class="btn" id="dlBtn" download>⬇ Download</a><button class="btn ghost" id="shareBtn" style="display:none">Share</button></div>
+    </div>
+    <div class="warn" id="supportWarn" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- LOGIN -->
+<div class="ov" id="loginOv"><div class="ovc">
+  <div class="big">▶</div>
+  <h2>Property Reel Maker</h2>
+  <p>Log in with the client code and PIN from Think Through Technology.</p>
+  <form id="loginForm">
+    <label>Client code<input type="text" id="lCode" autocomplete="username" style="text-transform:uppercase" placeholder="e.g. RKREAL"></label>
+    <label>PIN<input type="password" id="lPin" inputmode="numeric" autocomplete="current-password" maxlength="8"></label>
+    <div class="err" id="lErr"></div>
+    <button class="btn gold" type="submit" id="lBtn">Log in</button>
+  </form>
+  <p style="margin:14px 0 0;font-size:12.5px">New here? WhatsApp <a href="https://wa.me/918015304105" target="_blank" rel="noopener">Think Through Technology · 8015304105</a></p>
+</div></div>
+
+<!-- LOCK -->
+<div class="ov" id="lockOv"><div class="ovc">
+  <div class="big" id="lkLogo">🔒</div>
+  <h2 id="lkTitle">Subscription expired</h2>
+  <p id="lkText"></p>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <button class="btn gold" data-renew id="lkPay">Renew now</button>
+    <a class="btn ghost" id="lkWa" href="https://wa.me/918015304105" target="_blank" rel="noopener">WhatsApp Think Through Technology</a>
+    <button class="btn ghost" id="lkOut">Log out</button>
+  </div>
+  <div class="err" id="lkErr" style="color:var(--err);font-size:13px;margin-top:10px"></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+__MP4MUXER__
+</script>
+<script>
+{
+const API_BASE = (() => { try { const q = new URLSearchParams(location.search).get('api'); if (q) localStorage.setItem('reelApi', q); return localStorage.getItem('reelApi') || window.REEL_API_URL || '__API_URL__'; } catch (e) { return window.REEL_API_URL || '__API_URL__'; } })().replace(/\/+$/, '');
+const DEMO = __DEMO_IMAGES__;
+/* ======================= STATE ======================= */
+const W = 1080, H = 1920, FPS = 30;
+const state = {
+  client: null,
+  brand: { name: '', phone: '', tagline: '', main: '#0E1B2A', accent: '#E8BB5C', credit: 'Video by Think Through Technology', logo: null },
+  prop: { label: 'NEW LISTING', title: '', location: '', price: '', priceNote: '', chips: '', features: '', badge: '' },
+  template: 'classic', photos: [], lang: 'en', lines: {}, edited: {}, voices: {}, subs: false,
+  music: { mode: 'builtin', buffer: null, vol: 0.7 }
+};
+let photoSeq = 1, TOKEN = '';
+const $ = s => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = x => 1 - Math.pow(1 - clamp(x), 3);
+const easeBack = x => { x = clamp(x); const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v } catch (e) { return d } }, set(k, v) { try { localStorage.setItem(k, v) } catch (e) { } }, del(k) { try { localStorage.removeItem(k) } catch (e) { } } };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN');
+const fmtD = t => t ? new Date(t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const toast = m => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 3200); };
+
+const T = {
+  en: { price: 'PRICE', why: 'WHY THIS PROPERTY', hl: 'Key Highlights', cta: 'Book a site visit today', call: 'CALL / WHATSAPP' },
+  ta: { price: 'விலை', why: 'ஏன் இந்த சொத்து?', hl: 'முக்கிய சிறப்புகள்', cta: 'இன்றே சைட் விசிட் பதிவு செய்யுங்கள்', call: 'அழைக்க / WHATSAPP' }
+};
+const THEMES = {
+  classic: { name: 'Classic', swatch: 'brand', serif: false, pal: null, card: 'dark', trans: 'fade', grain: false, frame: false },
+  luxury: { name: 'Luxury', swatch: 'linear-gradient(135deg,#0B0B0D 60%,#C9A45C)', serif: true, pal: { main: '#0B0B0D', accent: '#C9A45C' }, card: 'dark', trans: 'zoom', grain: true, frame: true },
+  bright: { name: 'Bright', swatch: 'brand-light', serif: false, pal: null, card: 'light', trans: 'slide', grain: false, frame: false },
+  plots: { name: 'Plots & Land', swatch: 'linear-gradient(135deg,#12301F 60%,#9BD46A)', serif: false, pal: { main: '#12301F', accent: '#9BD46A' }, card: 'dark', trans: 'slide', grain: false, frame: false }
+};
+const TH = () => THEMES[state.template] || THEMES.classic;
+const PAL = () => TH().pal || { main: state.brand.main, accent: state.brand.accent };
+const chips = () => state.prop.chips.split(/,(?!\d)/).map(s => s.trim()).filter(Boolean).slice(0, 3);
+const feats = () => state.prop.features.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6);
+
+/* ======================= API ======================= */
+async function api(path, opt = {}) {
+  const r = await fetch(API_BASE + path, { ...opt, headers: { 'content-type': 'application/json', ...(TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+  if (r.status === 401 && path !== '/api/login') { doLogout(); throw new Error('Please log in again.'); }
+  const ct = r.headers.get('content-type') || '';
+  if (!ct.includes('json')) { if (!r.ok) throw new Error('Error ' + r.status); return r; }
+  const j = await r.json(); if (!r.ok) { const e = new Error(j.error || ('Error ' + r.status)); e.status = r.status; throw e; } return j;
+}
+
+/* ======================= SCENES / TIMELINE ======================= */
+function buildScenes() {
+  const ph = state.photos, base = p => p && p.kind === 'video' ? Math.max(2, p.trimLen) : 0;
+  const s = [{ key: 'intro', type: 'intro', name: 'Intro', base: 2.8 },
+             { key: 'price', type: 'price', name: 'Cover + price', base: Math.max(4.6, base(ph[0])), photo: ph[0] }];
+  ph.slice(1).forEach((p, i) => s.push({ key: 'ph_' + p.id, type: 'photo', name: (p.kind === 'video' ? 'Clip ' : 'Photo ') + (i + 2) + (p.title ? ' · ' + p.title : ''), base: p.kind === 'video' ? base(p) : 3.2, photo: p, alt: i % 2 }));
+  if (feats().length) s.push({ key: 'features', type: 'features', name: 'Highlights', base: 3.8 });
+  s.push({ key: 'outro', type: 'outro', name: 'Contact', base: 4.2 });
+  return s;
+}
+function timeline() {
+  const sc = buildScenes(); let t = 0;
+  sc.forEach(s => { const v = state.voices[s.key]; s.vdur = v ? v.duration : 0; s.dur = Math.max(s.base, v ? v.duration + 1.0 : 0); s.start = t; t += s.dur; });
+  return { scenes: sc, total: t };
+}
+function spokenPhone(p) { const d = (p || '').replace(/\D/g, ''); if (d.length === 10) return d.slice(0, 5).split('').join(' ') + ', ' + d.slice(5).split('').join(' '); return d.split('').join(' '); }
+function ttsText(s) { return (s || '').replace(/\+?\d[\d -]{7,}\d/g, m => spokenPhone(m)); }
+function defaultLine(s) {
+  const b = state.brand, p = state.prop, ta = state.lang === 'ta';
+  const c = chips().join(', '), f = feats().join(', '), bd = p.badge && !/\bsold\b/i.test(p.badge) ? ' ' + p.badge + '!' : '';
+  switch (s.type) {
+    case 'intro': return ta ? `வணக்கம்! ${b.name || ''} வழங்கும், ${p.location}-ல் அழகான ${p.title}.` : `${b.name || 'We'} present${b.name ? 's' : ''} a beautiful ${p.title} in ${p.location}.`;
+    case 'price': return (ta ? `இதன் விலை ${p.price} மட்டுமே. ${c}.` : `Priced at just ${p.price}. ${c}.`) + bd;
+    case 'photo': return [s.photo.title, s.photo.sub].filter(Boolean).join('. ') + (s.photo.title || s.photo.sub ? '.' : '');
+    case 'features': return ta ? `இதன் சிறப்புகள்: ${f}.` : `Key highlights: ${f}.`;
+    case 'outro': return ta ? `இன்றே சைட் விசிட் பதிவு செய்ய, ${b.phone} என்ற எண்ணில் அழையுங்கள்.` : `Book your site visit today. Call ${b.name || 'us'} on ${b.phone}.`;
+  }
+  return '';
+}
+
+/* ======================= DRAW HELPERS ======================= */
+const FONT_STACK = 'Poppins, "Noto Sans Tamil", "Nirmala UI", Latha, "Tamil Sangam MN", sans-serif';
+const SERIF_STACK = '"Playfair Display", Georgia, "Noto Serif Tamil", "Nirmala UI", serif';
+function setFont(ctx, w, s, serif) { ctx.font = `${w} ${s}px ${serif ? SERIF_STACK : FONT_STACK}`; }
+function hexRgb(h) { h = (h || '#000').replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgba(h, a) { const [r, g, b] = hexRgb(h); return `rgba(${r},${g},${b},${a})`; }
+function mix(h, w, k) { const a = hexRgb(h), b = hexRgb(w); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * k).toString(16).padStart(2, '0')).join(''); }
+const hasNonLatin = s => /[^\u0000-ɏ₹•·]/.test(s);
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function wrap(ctx, s, maxW) {
+  const words = (s || '').split(/\s+/).filter(Boolean), lines = []; let cur = '';
+  for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width <= maxW || !cur) cur = t; else { lines.push(cur); cur = w; } }
+  if (cur) lines.push(cur); return lines;
+}
+function fit(ctx, s, w, max, min, maxW, maxLines, serif) {
+  for (let z = max; z >= min; z -= 3) { setFont(ctx, w, z, serif); const L = wrap(ctx, s, maxW); if (L.length <= maxLines && L.every(l => ctx.measureText(l).width <= maxW)) return { size: z, lines: L }; }
+  setFont(ctx, w, min, serif); return { size: min, lines: wrap(ctx, s, maxW).slice(0, maxLines) };
+}
+function text(ctx, s, x, y, o = {}) {
+  if (!s) return;
+  const { w = 700, size = 60, color = '#fff', align = 'left', alpha = 1, shadow = true, spacing = 0, serif = false } = o;
+  ctx.save(); ctx.globalAlpha *= alpha; setFont(ctx, w, size, serif); ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'top';
+  if (spacing && 'letterSpacing' in ctx && !hasNonLatin(s)) ctx.letterSpacing = spacing + 'px';
+  if (shadow) { ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 4; }
+  ctx.fillText(s, x, y); ctx.restore();
+}
+function lines(ctx, L, x, y, size, o = {}) { const lh = o.serif ? 1.18 : 1.12; L.forEach((l, i) => text(ctx, l, x, y + i * size * lh, { ...o, size })); return y + L.length * size * lh; }
+function pill(ctx, s, x, y, o = {}) {
+  const { size = 34, w = 500, bg = '#fff', fg = '#000', padX = 26, padY = 12, icon = null, iconCol = null, tickCol = null, radius = null, alpha = 1, maxW = 9999, align = 'left' } = o;
+  ctx.save(); ctx.globalAlpha *= alpha; let z = size; setFont(ctx, w, z);
+  const iw = icon ? z * 1.25 : 0;
+  while (ctx.measureText(s).width + padX * 2 + iw > maxW && z > 18) { z -= 2; setFont(ctx, w, z); }
+  const tw = ctx.measureText(s).width, h = z * 1.5 + padY * 2 - z * .2, bw = tw + padX * 2 + iw;
+  if (align === 'center') x -= bw / 2; if (align === 'right') x -= bw;
+  rr(ctx, x, y, bw, h, radius == null ? h / 2 : radius); ctx.fillStyle = bg; ctx.fill();
+  if (icon === 'pin') { const cx = x + padX + z * .4, cy = y + h / 2 - z * .1, r = z * .36; ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0); ctx.lineTo(cx, cy + r * 1.9); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(cx, cy, r * .42, 0, 7); ctx.fill(); }
+  if (icon === 'tick') { const cx = x + padX + z * .45, cy = y + h / 2, r = z * .45; ctx.fillStyle = iconCol; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.strokeStyle = tickCol || '#000'; ctx.lineWidth = z * .12; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(cx - r * .45, cy); ctx.lineTo(cx - r * .1, cy + r * .38); ctx.lineTo(cx + r * .5, cy - r * .38); ctx.stroke(); }
+  ctx.fillStyle = fg; ctx.textBaseline = 'middle'; ctx.fillText(s, x + padX + iw, y + h / 2 + z * .04);
+  ctx.restore(); return { w: bw, h };
+}
+function an(lt, start, dur = .5) { return ease((lt - start) / dur); }
+function rule(ctx, x, y, w, p, center) { if (p <= 0) return; ctx.save(); ctx.fillStyle = PAL().accent; const ww = w * p, h = TH().serif ? 4 : 8; rr(ctx, center ? x - ww / 2 : x, y, ww, h, h / 2); ctx.fill(); ctx.restore(); }
+function coverDraw(ctx, img, iw, ih, scale, ox = 0, oy = 0) {
+  const s = Math.max(W / iw, H / ih) * scale, dw = iw * s, dh = ih * s;
+  ctx.drawImage(img, (W - dw) / 2 + ox, (H - dh) / 2 + oy, dw, dh);
+}
+const mediaSrc = ph => ph.kind === 'video' ? ph.el : ph.src;
+function drawPhoto(ctx, ph, p, alt) {
+  if (!ph) { ctx.fillStyle = PAL().main; ctx.fillRect(0, 0, W, H); return; }
+  const r = ph.w / ph.h, mode = ph.mode === 'auto' ? (r > 0.68 ? 'fit' : 'fill') : ph.mode, vid = ph.kind === 'video', amt = vid ? .05 : .14;
+  if (mode === 'fill') {
+    const z = alt ? 1 + amt - amt * p : 1.0 + amt * p;
+    coverDraw(ctx, mediaSrc(ph), ph.w, ph.h, z, vid ? 0 : (alt ? -1 : 1) * (p - .5) * 40, 0);
+  } else {
+    coverDraw(ctx, ph.blur, ph.blur.width, ph.blur.height, 1.1);
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(0, 0, W, H);
+    const a2 = vid ? .03 : .08, z = alt ? 1 + a2 - a2 * p : 1.0 + a2 * p;
+    let dw = W * z, dh = dw / r; if (dh > 1250 * z) { dh = 1250 * z; dw = dh * r; }
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 50; ctx.shadowOffsetY = 18;
+    ctx.drawImage(mediaSrc(ph), (W - dw) / 2, 820 - dh / 2, dw, dh); ctx.restore();
+  }
+}
+function bottomGrad(ctx) {
+  const g = ctx.createLinearGradient(0, H * .46, 0, H * .8), m = PAL().main;
+  g.addColorStop(0, rgba(m, 0)); g.addColorStop(1, rgba(m, .93));
+  ctx.fillStyle = g; ctx.fillRect(0, H * .46, W, H * .54);
+}
+function chrome(ctx) {
+  const g = ctx.createLinearGradient(0, 0, 0, 330); g.addColorStop(0, rgba(PAL().main, .5)); g.addColorStop(1, rgba(PAL().main, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, 330);
+  brandTag(ctx, 60, 112);
+}
+function brandTag(ctx, x, y) {
+  const b = state.brand, name = (b.name || 'Your Brand').toUpperCase();
+  ctx.save(); setFont(ctx, 700, 30); if ('letterSpacing' in ctx && !hasNonLatin(name)) ctx.letterSpacing = '2px';
+  const tw = Math.min(ctx.measureText(name).width, 620); let lw = 0;
+  if (b.logo) lw = Math.min(44 * (b.logo.width / b.logo.height), 116) + 14;
+  const h = 70, bw = tw + 56 + lw;
+  rr(ctx, x, y, bw, h, h / 2); ctx.fillStyle = 'rgba(255,255,255,.94)'; ctx.fill();
+  if (b.logo) { const r = b.logo.width / b.logo.height, lww = Math.min(44 * r, 116), lhh = lww / r; ctx.drawImage(b.logo, x + 24, y + (h - lhh) / 2, lww, lhh); }
+  ctx.fillStyle = PAL().main; ctx.textBaseline = 'middle'; ctx.fillText(name, x + 28 + lw, y + h / 2 + 1, 620); ctx.restore();
+}
+function subtitle(ctx, s) {
+  if (!state.subs || !s) return;
+  ctx.save(); setFont(ctx, 500, 34); const L = wrap(ctx, s, 900).slice(0, 2), lh = 46, h = L.length * lh + 28, y = 1700;
+  const w = Math.max(...L.map(l => ctx.measureText(l).width)) + 48;
+  rr(ctx, (W - w) / 2, y, w, h, 18); ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  L.forEach((l, i) => ctx.fillText(l, W / 2, y + 14 + i * lh + 2)); ctx.restore();
+}
+/* --- effects --- */
+let _grain = null;
+function grain(ctx, t) {
+  if (!_grain) { _grain = document.createElement('canvas'); _grain.width = _grain.height = 256; const g = _grain.getContext('2d'), d = g.createImageData(256, 256);
+    for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); }
+  const f = Math.floor(t * FPS), ox = (f * 73) % 256, oy = (f * 151) % 256;
+  ctx.save(); ctx.globalAlpha = .06; ctx.globalCompositeOperation = 'overlay';
+  for (let x = -ox; x < W; x += 256) for (let y = -oy; y < H; y += 256) ctx.drawImage(_grain, x, y);
+  ctx.restore();
+}
+function frame(ctx) { ctx.save(); ctx.strokeStyle = rgba(PAL().accent, .75); ctx.lineWidth = 3; ctx.strokeRect(34, 34, W - 68, H - 68); ctx.lineWidth = 1; ctx.strokeRect(46, 46, W - 92, H - 92); ctx.restore(); }
+let _tc = null;
+function shineText(ctx, s, x, y, size, color, sp, serif) {
+  // draws text, then a light band sweeping across it (sp: 0..1)
+  if (!_tc) { _tc = document.createElement('canvas'); _tc.width = W; _tc.height = 320; }
+  const t = _tc.getContext('2d'); t.clearRect(0, 0, W, 320); setFont(t, 700, size, serif); t.textBaseline = 'top'; t.fillStyle = '#fff'; t.fillText(s, x, 60);
+  t.globalCompositeOperation = 'source-in'; const bx = -300 + (W + 600) * sp, g = t.createLinearGradient(bx - 160, 0, bx + 160, 320);
+  g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,246,214,.95)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  t.fillStyle = g; t.fillRect(0, 0, W, 320); t.globalCompositeOperation = 'source-over';
+  text(ctx, s, x, y, { size, color, serif }); if (sp > 0 && sp < 1) ctx.drawImage(_tc, 0, y - 60);
+}
+function urgency(ctx, lt, start, x, y, align) {
+  const b = (state.prop.badge || '').trim(); if (!b || /\bsold\b/i.test(b)) return;
+  const a = an(lt, start, .35); if (a <= 0) return; const k = (1 + .04 * Math.sin((lt - start) * 6)) * (.6 + .4 * easeBack((lt - start) / .45));
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-.06); ctx.scale(k, k);
+  pill(ctx, '🔥 ' + b, 0, -40, { size: 38, w: 700, bg: '#E53935', fg: '#fff', padX: 28, padY: 14, alpha: a, align, maxW: 900 }); ctx.restore();
+}
+function soldStamp(ctx, lt, start) {
+  const b = (state.prop.badge || '').trim(); if (!/\bsold\b/i.test(b)) return;
+  const p = clamp((lt - start) / .35); if (p <= 0) return; const k = 2.2 - 1.2 * ease(p), sh = p < 1 ? 0 : Math.sin((lt - start) * 40) * Math.max(0, 1 - (lt - start - .35) * 4) * 6;
+  ctx.save(); ctx.translate(W / 2 + sh, 640); ctx.rotate(-.21); ctx.scale(k, k); ctx.globalAlpha = Math.min(1, p * 1.5) * .93;
+  setFont(ctx, 700, 150); const tw = ctx.measureText(b.toUpperCase()).width, bw = tw + 120, bh = 230;
+  rr(ctx, -bw / 2, -bh / 2, bw, bh, 26); ctx.lineWidth = 14; ctx.strokeStyle = '#E53935'; ctx.stroke();
+  rr(ctx, -bw / 2 + 22, -bh / 2 + 22, bw - 44, bh - 44, 14); ctx.lineWidth = 4; ctx.stroke();
+  ctx.fillStyle = '#E53935'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.toUpperCase(), 0, 8); ctx.restore();
+}
+
+/* ======================= SCENE RENDERERS ======================= */
+function sceneIntro(ctx, lt, s) {
+  const P = PAL(), ph = state.photos[0], th = TH();
+  if (ph) { coverDraw(ctx, ph.blur, ph.blur.width, ph.blur.height, 1.1 + lt * .02); ctx.fillStyle = rgba(P.main, .66); ctx.fillRect(0, 0, W, H); }
+  else { ctx.fillStyle = P.main; ctx.fillRect(0, 0, W, H); }
+  const p = state.prop;
+  brandTag(ctx, 90, 470 + (1 - an(lt, 0, .5)) * -30);
+  const y = 700;
+  rule(ctx, 90, y, 120, an(lt, .15));
+  let a = an(lt, .2); text(ctx, (p.label || '').toUpperCase(), 90, y + 40 + (1 - a) * 40, { size: 38, color: P.accent, spacing: 9, alpha: a });
+  const f = fit(ctx, p.title || 'Property title', 700, th.serif ? 150 : 160, 80, 920, 3, th.serif);
+  a = an(lt, .4); const ye = lines(ctx, f.lines, 84, y + 100 + (1 - a) * 70, f.size, { alpha: a, serif: th.serif });
+  a = an(lt, .75); if (p.location) pill(ctx, p.location, 90, ye + 30 + (1 - a) * 40, { size: 42, w: 500, bg: 'rgba(255,255,255,.16)', fg: '#fff', icon: 'pin', alpha: a });
+  urgency(ctx, lt, 1.1, 90, ye + 210, 'left');
+}
+function scenePrice(ctx, lt, s) {
+  drawPhoto(ctx, s.photo, lt / s.dur, 0); bottomGrad(ctx); chrome(ctx);
+  const p = state.prop, P = PAL(), c = chips(), th = TH(), light = th.card === 'light';
+  const cardFill = light ? 'rgba(255,255,255,.97)' : rgba(P.main, .88), ink = light ? P.main : '#fff', sub = light ? '#4B5563' : 'rgba(255,255,255,.85)', lbl = light ? mix(P.accent, '#000000', .35) : P.accent;
+  const pa = an(lt, .2), top = 1290 + (1 - pa) * 40;
+  if (pa > 0) { ctx.save(); ctx.globalAlpha = pa; ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = light ? 40 : 0; rr(ctx, 44, top, W - 88, 380, th.serif ? 8 : 36); ctx.fillStyle = cardFill; ctx.fill(); if (th.serif) { ctx.shadowBlur = 0; ctx.strokeStyle = rgba(P.accent, .8); ctx.lineWidth = 2; ctx.stroke(); } ctx.restore(); }
+  rule(ctx, 92, top + 42, 80, an(lt, .35));
+  let a = an(lt, .35); text(ctx, T[state.lang].price, 92, top + 68 + (1 - a) * 30, { size: 30, color: lbl, spacing: 8, alpha: a, shadow: !light });
+  const maxW = c.length ? 540 : 880, f = fit(ctx, p.price || '₹ —', 700, 104, 56, maxW, 1, th.serif), py = top + 112 + (104 - f.size) * .5;
+  const pp = clamp((lt - .5) / .45);
+  if (pp > 0) {
+    const k = 1.35 - .35 * easeBack(pp); ctx.save(); ctx.globalAlpha = Math.min(1, pp * 2); ctx.translate(86, py + f.size / 2); ctx.scale(k, k); ctx.translate(-86, -(py + f.size / 2));
+    shineText(ctx, f.lines[0], 86, py, f.size, ink, clamp((lt - 1.15) / .8), th.serif); ctx.restore();
+  }
+  a = an(lt, .7); const nf = fit(ctx, p.priceNote, 400, 36, 26, maxW, 2); lines(ctx, nf.lines, 92, top + 250 + (1 - a) * 30, nf.size, { w: 400, color: sub, alpha: a, shadow: false });
+  c.forEach((t, i) => { const ca = an(lt, 1 + i * .15); pill(ctx, t, 668, top + 96 + i * 82 + (1 - ca) * 30, { size: 32, w: 500, bg: light ? P.main : '#fff', fg: light ? '#fff' : P.main, padX: 24, padY: 10, alpha: ca, maxW: 330 }); });
+  urgency(ctx, lt, 1.6, W - 70, 290, 'right');
+  soldStamp(ctx, lt, .9);
+}
+function scenePhoto(ctx, lt, s) {
+  drawPhoto(ctx, s.photo, lt / s.dur, s.alt); bottomGrad(ctx); chrome(ctx);
+  const ph = s.photo, P = PAL(), th = TH();
+  let y = 1330;
+  if (!ph.tag && !ph.title && !ph.sub) return;
+  rule(ctx, 72, y, 90, an(lt, .3));
+  let a = an(lt, .35); if (ph.tag) { text(ctx, ph.tag.toUpperCase(), 72, y + 30 + (1 - a) * 30, { size: 32, color: P.accent, spacing: 8, alpha: a }); y += 74; } else y += 34;
+  const dx = th.trans === 'slide' ? (1 - an(lt, .45, .55)) * -80 : 0;
+  a = an(lt, .5); const f = fit(ctx, ph.title, 700, 92, 54, 936, 2, th.serif); y = lines(ctx, f.lines, 66 + dx, y + (1 - a) * 50, f.size, { alpha: a, serif: th.serif });
+  a = an(lt, .75); const sf = fit(ctx, ph.sub, 400, 38, 28, 936, 2); lines(ctx, sf.lines, 72, y + 14 + (1 - a) * 30, sf.size, { w: 400, color: 'rgba(255,255,255,.9)', alpha: a });
+}
+function sceneFeatures(ctx, lt, s) {
+  const P = PAL(), ph = state.photos[state.photos.length - 1], th = TH();
+  if (ph) { coverDraw(ctx, ph.blur, ph.blur.width, ph.blur.height, 1.1); ctx.fillStyle = rgba(P.main, .8); ctx.fillRect(0, 0, W, H); } else { ctx.fillStyle = P.main; ctx.fillRect(0, 0, W, H); }
+  chrome(ctx);
+  const F = feats();
+  rule(ctx, 90, 470, 90, an(lt, .1));
+  let a = an(lt, .15); text(ctx, T[state.lang].why, 90, 500 + (1 - a) * 30, { size: 34, color: P.accent, spacing: 8, alpha: a });
+  a = an(lt, .3); const f = fit(ctx, T[state.lang].hl, 700, 88, 56, 900, 2, th.serif); const ye = lines(ctx, f.lines, 84, 548 + (1 - a) * 50, f.size, { alpha: a, serif: th.serif });
+  const gap = Math.min(132, (1560 - ye - 60) / Math.max(F.length, 1));
+  F.forEach((t, i) => { const fa = an(lt, .55 + i * .2, .45); pill(ctx, t, 90 + (1 - fa) * -60, ye + 60 + i * gap, { size: 44, w: 500, bg: th.card === 'light' ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.12)', fg: th.card === 'light' ? P.main : '#fff', icon: 'tick', iconCol: P.accent, tickCol: P.main, padX: 28, padY: 18, radius: th.serif ? 6 : 22, alpha: fa, maxW: 900 }); });
+}
+function sceneOutro(ctx, lt, s) {
+  const b = state.brand, P = PAL(), L = T[state.lang], th = TH();
+  ctx.fillStyle = P.main; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W / 2, 820, 50, W / 2, 820, 820); g.addColorStop(0, mix(P.main, '#ffffff', .2)); g.addColorStop(1, rgba(P.main, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  let a = an(lt, .1); const cf = fit(ctx, L.cta, 500, 56, 36, 940, 2, th.serif); lines(ctx, cf.lines, W / 2, 440 + (1 - a) * 40, cf.size, { w: th.serif ? 700 : 500, align: 'center', alpha: a, serif: th.serif });
+  rule(ctx, W / 2, 610, 120, an(lt, .25), true);
+  a = an(lt, .3); text(ctx, L.call, W / 2, 652 + (1 - a) * 30, { size: 32, color: P.accent, spacing: 8, align: 'center', alpha: a });
+  a = an(lt, .45); const pf = fit(ctx, b.phone || '—', 700, 120, 60, 980, 1); text(ctx, pf.lines[0], W / 2, 700 + (120 - pf.size) / 2 + (1 - a) * 60, { size: pf.size, align: 'center', alpha: a });
+  a = an(lt, .9);
+  if (a > 0) {
+    ctx.save(); ctx.globalAlpha = a; const cy = 1010 + (1 - a) * 40;
+    if (b.logo) { const r = b.logo.width / b.logo.height, lw = Math.min(150 * r, 520), lhh = lw / r; rr(ctx, W / 2 - lw / 2 - 30, cy - 20, lw + 60, lhh + 40, 28); ctx.fillStyle = '#fff'; ctx.fill(); ctx.drawImage(b.logo, W / 2 - lw / 2, cy, lw, lhh); }
+    else { const cx = W / 2; ctx.fillStyle = P.accent; ctx.beginPath(); ctx.moveTo(cx - 75, cy + 70); ctx.lineTo(cx, cy); ctx.lineTo(cx + 75, cy + 70); ctx.closePath(); ctx.fill(); ctx.fillRect(cx - 54, cy + 68, 108, 80); ctx.fillStyle = P.main; ctx.fillRect(cx - 15, cy + 94, 30, 54); }
+    ctx.restore();
+  }
+  a = an(lt, 1.05); const bf = fit(ctx, (b.name || 'Your Brand').toUpperCase(), 700, 66, 40, 960, 2); const ye = lines(ctx, bf.lines, W / 2, 1210 + (1 - a) * 30, bf.size, { align: 'center', alpha: a, spacing: 5 });
+  a = an(lt, 1.2); const tf = fit(ctx, b.tagline, 400, 36, 26, 940, 2); lines(ctx, tf.lines, W / 2, ye + 16, tf.size, { w: 400, align: 'center', color: 'rgba(255,255,255,.78)', alpha: a, shadow: false });
+  a = an(lt, 1.4); text(ctx, b.credit, W / 2, 1630, { size: 26, w: 400, align: 'center', color: 'rgba(255,255,255,.5)', alpha: a, shadow: false });
+}
+const RENDER = { intro: sceneIntro, price: scenePrice, photo: scenePhoto, features: sceneFeatures, outro: sceneOutro };
+function renderScene(ctx, s, lt, t) {
+  ctx.save(); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H);
+  RENDER[s.type](ctx, lt, s);
+  if (TH().frame) frame(ctx);
+  if (lt > .3 && lt < s.dur + .1) subtitle(ctx, state.lines[s.key]);
+  ctx.restore();
+}
+let _oc = null;
+const XF = () => TH().trans === 'fade' ? .4 : .45;
+function sceneAt(TL, t) { const sc = TL.scenes; let i = sc.findIndex(s => t >= s.start && t < s.start + s.dur); return i < 0 ? sc.length - 1 : i; }
+function drawFrame(ctx, t, TL) {
+  const sc = TL.scenes, i = sceneAt(TL, t), s = sc[i], lt = t - s.start, xf = XF();
+  if (i > 0 && lt < xf) {
+    const pv = sc[i - 1], e = ease(lt / xf), tr = TH().trans;
+    if (!_oc) { _oc = document.createElement('canvas'); _oc.width = W; _oc.height = H; }
+    const o = _oc.getContext('2d'); renderScene(o, pv, t - pv.start, t);
+    ctx.save(); ctx.clearRect(0, 0, W, H);
+    if (tr === 'slide') { ctx.drawImage(_oc, -W * .35 * e, 0); ctx.fillStyle = `rgba(0,0,0,${.35 * e})`; ctx.fillRect(0, 0, W, H); }
+    else ctx.drawImage(_oc, 0, 0);
+    renderScene(o, s, lt, t);
+    if (tr === 'slide') { ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 40; ctx.drawImage(_oc, W * (1 - e), 0); }
+    else if (tr === 'zoom') { const k = 1.12 - .12 * e; ctx.globalAlpha = e; ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.drawImage(_oc, -W / 2, -H / 2); }
+    else { ctx.globalAlpha = e; ctx.drawImage(_oc, 0, 0); }
+    ctx.restore();
+  } else renderScene(ctx, s, lt, t);
+  if (TH().grain) grain(ctx, t);
+}
+/* video frame sync */
+function videoTarget(s, lt) { const ph = s.photo; const speed = Math.min(1, ph.trimLen / Math.max(.1, s.dur)); return ph.trimStart + Math.min(ph.trimLen - .04, Math.max(0, lt) * speed); }
+function visibleVideoScenes(TL, t) {
+  const sc = TL.scenes, i = sceneAt(TL, t), out = [], s = sc[i];
+  if (s.photo && s.photo.kind === 'video') out.push([s, t - s.start]);
+  if (i > 0 && t - s.start < XF()) { const p = sc[i - 1]; if (p.photo && p.photo.kind === 'video' && p.photo !== s.photo) out.push([p, t - p.start]); }
+  return out;
+}
+function seek(el, tt) { return new Promise(res => { if (Math.abs(el.currentTime - tt) < .001 && el.readyState >= 2) return res(); const to = setTimeout(res, 3000); el.addEventListener('seeked', () => { clearTimeout(to); res(); }, { once: true }); el.currentTime = tt; }); }
+async function syncVideos(TL, t) { for (const [s, lt] of visibleVideoScenes(TL, t)) await seek(s.photo.el, videoTarget(s, lt)); }
+function nudgeVideos(TL, t) { for (const [s, lt] of visibleVideoScenes(TL, t)) { const el = s.photo.el, tt = videoTarget(s, lt); if (!el.seeking && Math.abs(el.currentTime - tt) > .04) el.currentTime = tt; } }
+
+/* ======================= PREVIEW ======================= */
+const pv = $('#pv'), pctx = pv.getContext('2d');
+let TLc = timeline(), playing = false, ptime = 0, plast = 0;
+function refresh(rebuildVoice) {
+  TLc = timeline();
+  $('#lenLbl').textContent = TLc.total.toFixed(1) + ' sec';
+  if (ptime > TLc.total) ptime = 0;
+  if (rebuildVoice) renderVoiceRows();
+  if (!playing) drawPreview();
+}
+function drawPreview() { nudgeVideos(TLc, ptime); drawFrame(pctx, ptime, TLc); $('#scrub').value = Math.round(ptime / TLc.total * 1000); $('#tlbl').textContent = ptime.toFixed(1) + 's'; }
+function loop(ts) { if (!playing) return; ptime += (ts - plast) / 1000; plast = ts; if (ptime >= TLc.total) { ptime = 0; playing = false; $('#playBtn').textContent = '▶'; } drawPreview(); if (playing) requestAnimationFrame(loop); }
+$('#playBtn').onclick = () => { playing = !playing; $('#playBtn').textContent = playing ? '❚❚' : '▶'; if (playing) { plast = performance.now(); requestAnimationFrame(loop); } };
+$('#scrub').oninput = e => { ptime = e.target.value / 1000 * TLc.total; drawPreview(); };
+let exporting = false;
+
+/* ======================= FORM ======================= */
+function getK(k) { const [a, b] = k.split('.'); return state[a][b]; }
+function setK(k, v) { const [a, b] = k.split('.'); state[a][b] = v; }
+document.querySelectorAll('[data-k]').forEach(el => { el.value = getK(el.dataset.k) || ''; el.addEventListener('input', () => { setK(el.dataset.k, el.value); refresh(true); }); });
+function syncForm() { document.querySelectorAll('[data-k]').forEach(el => el.value = getK(el.dataset.k) || ''); }
+function renderStyles() {
+  const b = state.brand;
+  $('#styleBox').innerHTML = Object.entries(THEMES).map(([k, t]) => { const sw = t.swatch === 'brand' ? `linear-gradient(135deg,${b.main} 60%,${b.accent})` : t.swatch === 'brand-light' ? `linear-gradient(135deg,#fff 45%,${b.main} 45% 80%,${b.accent} 80%)` : t.swatch;
+    return `<button class="sty ${k === state.template ? 'on' : ''}" data-t="${k}"><i style="background:${sw};border:1px solid #e3e7ed"></i><b>${t.name}</b></button>`; }).join('');
+}
+$('#styleBox').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; state.template = b.dataset.t; renderStyles(); refresh(); };
+function loadImg(src) { return new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = src; }); }
+
+/* media */
+$('#drop').onclick = () => $('#photoFile').click();
+$('#photoFile').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+['dragenter', 'dragover'].forEach(ev => $('#drop').addEventListener(ev, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('#drop').addEventListener(ev, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
+$('#drop').addEventListener('drop', e => addFiles([...e.dataTransfer.files].filter(f => /^(image|video)\//.test(f.type))));
+function makeBlur(src, w, h) {
+  const sm = document.createElement('canvas'); sm.width = 27; sm.height = 48; const sx = sm.getContext('2d'); sx.imageSmoothingQuality = 'high';
+  const s = Math.max(27 / w, 48 / h); sx.drawImage(src, (27 - w * s) / 2, (48 - h * s) / 2, w * s, h * s);
+  const bl = document.createElement('canvas'); bl.width = 270; bl.height = 480; const bx = bl.getContext('2d'); bx.imageSmoothingQuality = 'high'; bx.drawImage(sm, 0, 0, 270, 480); return bl;
+}
+function thumbOf(src, w, h) { const k = Math.min(1, 240 / Math.max(w, h)), c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .7); }
+async function makePhoto(src, meta = {}) {
+  const img = await loadImg(src); const k = Math.min(1, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return { id: photoSeq++, kind: 'image', src: c, w: c.width, h: c.height, blur: makeBlur(c, c.width, c.height), thumb: thumbOf(c, c.width, c.height), tag: meta.tag || '', title: meta.title || '', sub: meta.sub || '', mode: 'auto' };
+}
+async function makeVideo(file) {
+  const el = document.createElement('video'); el.muted = true; el.playsInline = true; el.preload = 'auto'; el.crossOrigin = 'anonymous'; el.src = URL.createObjectURL(file);
+  await new Promise((res, rej) => { el.onloadeddata = res; el.onerror = () => rej(new Error('This video format is not supported here. Try an MP4 (H.264) clip.')); setTimeout(() => rej(new Error('Video took too long to load.')), 20000); });
+  const dur = el.duration || 0; await seek(el, Math.min(.5, dur / 3));
+  const w = el.videoWidth, h = el.videoHeight;
+  el.addEventListener('seeked', () => { if (!playing && !exporting) drawFrame(pctx, ptime, TLc); });
+  return { id: photoSeq++, kind: 'video', el, w, h, dur, trimStart: 0, trimLen: Math.min(6, Math.max(1, dur - .05)), blur: makeBlur(el, w, h), thumb: thumbOf(el, w, h), tag: '', title: '', sub: '', mode: 'auto' };
+}
+async function addFiles(files) {
+  for (const f of files) { try { state.photos.push(f.type.startsWith('video/') ? await makeVideo(f) : await makePhoto(URL.createObjectURL(f))); } catch (e) { toast((e && e.message) || ('Could not read ' + f.name)); } }
+  renderPhotos();
+}
+function renderPhotos() {
+  const L = $('#photoList'); L.innerHTML = '';
+  state.photos.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'ph'; const v = p.kind === 'video';
+    d.innerHTML = `<div class="th"><img src="${p.thumb}">${v ? `<span class="vb">▶ ${p.dur.toFixed(1)}s</span>` : ''}</div><div>${i === 0 ? '<span class="badge">COVER · shown with price</span>' : ''}<div class="f">
+      ${i === 0 ? '' : `<input type="text" data-f="tag" placeholder="Small label (e.g. LIVING AREA)"><input type="text" data-f="title" placeholder="Title (e.g. Spacious Hall)"><input class="full" type="text" data-f="sub" placeholder="Details (e.g. Big windows · Wood-panel TV wall)">`}
+      ${v ? `<label>Start at (sec)<input type="number" data-f="trimStart" min="0" step="0.5"></label><label>Use length (sec)<input type="number" data-f="trimLen" min="1" step="0.5"></label>` : ''}
+      <select data-f="mode" class="${v || i === 0 ? 'full' : ''}"><option value="auto">Auto fit</option><option value="fill">Fill screen (crop)</option><option value="fit">Show full ${v ? 'video' : 'photo'}</option></select></div></div>
+      <div class="tools"><button class="btn ghost icon" data-a="up" title="Move up">↑</button><button class="btn ghost icon" data-a="down" title="Move down">↓</button><button class="btn ghost icon" data-a="del" title="Remove">✕</button></div>`;
+    d.querySelectorAll('[data-f]').forEach(inp => {
+      inp.value = p[inp.dataset.f];
+      inp.addEventListener('input', () => {
+        let val = inp.value;
+        if (inp.dataset.f === 'trimStart') { val = clamp(Number(val) || 0, 0, Math.max(0, p.dur - 1)); p.trimLen = Math.min(p.trimLen, p.dur - val); }
+        if (inp.dataset.f === 'trimLen') val = clamp(Number(val) || 1, 1, Math.max(1, p.dur - p.trimStart));
+        p[inp.dataset.f] = val; refresh(inp.dataset.f !== 'mode');
+      });
+    });
+    d.querySelector('[data-a=up]').onclick = () => { if (i > 0) { [state.photos[i - 1], state.photos[i]] = [state.photos[i], state.photos[i - 1]]; renderPhotos(); } };
+    d.querySelector('[data-a=down]').onclick = () => { if (i < state.photos.length - 1) { [state.photos[i + 1], state.photos[i]] = [state.photos[i], state.photos[i + 1]]; renderPhotos(); } };
+    d.querySelector('[data-a=del]').onclick = () => { const r = state.photos.splice(i, 1)[0]; if (r && r.kind === 'video') URL.revokeObjectURL(r.el.src); renderPhotos(); };
+    L.appendChild(d);
+  });
+  refresh(true);
+}
+
+/* language + script */
+function setLang(l, silent) {
+  state.lang = l; document.querySelectorAll('#langTabs button').forEach(b => b.classList.toggle('on', b.dataset.lang === l));
+  if (silent || !Object.keys(state.voices).length || confirm('Rewrite the voice script in the new language?\n(Existing voices stay until you replace them.)')) regenScript();
+  refresh();
+}
+document.querySelectorAll('#langTabs button').forEach(b => b.onclick = () => setLang(b.dataset.lang));
+function regenScript() { state.lines = {}; state.edited = {}; renderVoiceRows(); }
+$('#regen').onclick = () => { if (confirm('Rewrite all voice lines from the property details? Your edits to the script will be replaced.')) regenScript(); };
+$('#subsChk').onchange = e => { state.subs = e.target.checked; refresh(); };
+
+/* voice rows */
+let actx = null; const AC = () => actx || (actx = new (window.AudioContext || window.webkitAudioContext)());
+let recState = null;
+function renderVoiceRows() {
+  const box = $('#voiceRows'), sc = buildScenes(); box.innerHTML = '';
+  sc.forEach(s => {
+    if (!state.edited[s.key] || state.lines[s.key] == null) state.lines[s.key] = defaultLine(s);
+    const v = state.voices[s.key];
+    const d = document.createElement('div'); d.className = 'vrow';
+    d.innerHTML = `<div class="top"><b class="nm"></b><span class="dur ${v ? 'has' : ''}">${v ? '🔊 ' + v.duration.toFixed(1) + 's voice' : 'No voice'}</span></div>
+      <textarea></textarea>
+      <div class="acts"><button class="btn ghost sm" data-a="rec">⏺ Record</button><button class="btn ghost sm" data-a="up">⬆ Upload</button>
+      <button class="btn ghost sm" data-a="play" ${v ? '' : 'disabled'}>▶ Play</button><button class="btn ghost sm" data-a="clr" ${v ? '' : 'disabled'}>✕ Remove voice</button>
+      <input type="file" accept="audio/*" hidden></div>`;
+    d.querySelector('.nm').textContent = s.name;
+    const ta = d.querySelector('textarea'); ta.value = state.lines[s.key];
+    ta.oninput = () => { state.lines[s.key] = ta.value; state.edited[s.key] = true; if (state.subs && !playing) drawPreview(); };
+    const fi = d.querySelector('input[type=file]');
+    d.querySelector('[data-a=up]').onclick = () => fi.click();
+    fi.onchange = async () => { const f = fi.files[0]; if (!f) return; try { setVoice(s.key, await AC().decodeAudioData(await f.arrayBuffer())); } catch (e) { toast('Could not read this audio file.'); } };
+    d.querySelector('[data-a=play]').onclick = () => playBuf(state.voices[s.key]);
+    d.querySelector('[data-a=clr]').onclick = () => { delete state.voices[s.key]; refresh(true); };
+    d.querySelector('[data-a=rec]').onclick = e => toggleRec(s.key, e.currentTarget);
+    box.appendChild(d);
+  });
+}
+function setVoice(k, buf) { state.voices[k] = buf; refresh(true); }
+let curSrc = null;
+function playBuf(b) { if (!b) return; try { curSrc && curSrc.stop(); } catch (e) { } const s = AC().createBufferSource(); s.buffer = b; s.connect(AC().destination); s.start(); curSrc = s; }
+async function toggleRec(key, btn) {
+  if (recState) { recState.mr.stop(); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { toast('Microphone permission was blocked.'); return; }
+  const mr = new MediaRecorder(stream), chunks = [];
+  mr.ondataavailable = e => chunks.push(e.data);
+  mr.onstop = async () => { stream.getTracks().forEach(t => t.stop()); recState = null; btn.classList.remove('rec'); btn.textContent = '⏺ Record';
+    try { setVoice(key, trimSilence(await AC().decodeAudioData(await new Blob(chunks).arrayBuffer()))); } catch (e) { toast('Recording failed, please try again.'); } };
+  recState = { mr }; mr.start(); btn.classList.add('rec'); btn.textContent = '⏹ Stop';
+}
+function trimSilence(buf) {
+  const d = buf.getChannelData(0), th = 0.02; let a = 0, b = d.length - 1;
+  while (a < d.length && Math.abs(d[a]) < th) a++; while (b > a && Math.abs(d[b]) < th) b--;
+  a = Math.max(0, a - buf.sampleRate * .08); b = Math.min(d.length, b + buf.sampleRate * .15);
+  if (b - a < buf.sampleRate * .3) return buf;
+  const out = AC().createBuffer(buf.numberOfChannels, Math.floor(b - a), buf.sampleRate);
+  for (let c = 0; c < buf.numberOfChannels; c++) out.copyToChannel(buf.getChannelData(c).subarray(a, b), c);
+  return out;
+}
+
+/* AI voice via server */
+function renderAiBox() {
+  const c = state.client, box = $('#aiBox'); if (!c) { box.innerHTML = ''; return; }
+  if (!c.aiVoice) { box.innerHTML = `<b style="font-size:13.5px">🎙 Your own voice</b><div class="note" style="margin-top:4px">Your <b>${esc(c.planName)}</b> plan uses your own recordings — tap <b>Record</b> on each line below. Want your cloned AI voice to read the script automatically? Ask us to upgrade to <b>Standard</b>.</div>`; return; }
+  if (!c.voiceEnabled) { box.innerHTML = `<b style="font-size:13.5px">🎙 AI voice</b><div class="note" style="margin-top:4px">Your AI voice is being set up by Think Through Technology. Meanwhile you can record or upload your voice below.</div>`; return; }
+  const u = c.usage || {}, left = c.charLimit ? Math.max(0, c.charLimit - (u.chars || 0)) : null;
+  box.innerHTML = `<div class="row" style="justify-content:space-between"><b style="font-size:13.5px">🎙 AI voice — reads the script in your voice</b><button class="btn sm" id="aiGen">Generate AI voice</button></div>
+    <div class="note" id="aiState">${left == null ? '' : `About ${Math.floor(left / 500)} reels of AI voice left this month (${left.toLocaleString('en-IN')} characters).`}</div>`;
+  $('#aiGen').onclick = genAI;
+}
+async function genAI() {
+  const sc = buildScenes().filter(s => (state.lines[s.key] || '').trim()), st = $('#aiState'), btn = $('#aiGen');
+  btn.disabled = true; let n = 0;
+  try {
+    for (const s of sc) {
+      st.textContent = `Generating ${++n} of ${sc.length}…`;
+      const r = await fetch(API_BASE + '/api/tts', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + TOKEN }, body: JSON.stringify({ text: ttsText(state.lines[s.key]) }) });
+      if (!r.ok) { let m = 'Error ' + r.status; try { m = (await r.json()).error || m; } catch (e) { } if (r.status === 401) doLogout(); throw new Error(m); }
+      const used = Number(r.headers.get('x-usage-chars')); if (used && state.client) state.client.usage.chars = used;
+      state.voices[s.key] = await AC().decodeAudioData(await r.arrayBuffer());
+    }
+    refresh(true); renderAccount(); toast('✓ AI voice ready for all scenes');
+  } catch (e) { refresh(true); renderAccount(); const s2 = $('#aiState'); if (s2) s2.textContent = '✕ ' + e.message; }
+}
+
+/* music */
+document.querySelectorAll('#musicTabs button').forEach(b => b.onclick = () => {
+  state.music.mode = b.dataset.m; document.querySelectorAll('#musicTabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('#musicUp').style.display = b.dataset.m === 'upload' ? 'flex' : 'none';
+});
+$('#musicBtn').onclick = () => $('#musicFile').click();
+$('#musicFile').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { state.music.buffer = await AC().decodeAudioData(await f.arrayBuffer()); $('#musicName').textContent = f.name; } catch (x) { toast('Could not read this audio file.'); } };
+$('#musicVol').oninput = e => { state.music.vol = e.target.value / 100; $('#musicVolV').textContent = e.target.value + '%'; };
+
+/* ======================= AUDIO ======================= */
+const SR = 48000;
+function synthMusic(dur, dropAt, style) {
+  const n = Math.ceil(dur * SR), L = new Float32Array(n), R = new Float32Array(n), out = new Float32Array(n);
+  const bpm = style === 'luxury' ? 84 : style === 'bright' ? 112 : 100, beat = 60 / bpm, bar = beat * 4, n2f = m => 440 * Math.pow(2, (m - 69) / 12);
+  const chords = [[48, 55, 59, 64], [45, 52, 55, 60], [41, 48, 52, 57], [43, 50, 55, 59]];
+  for (let i = 0; i * bar < dur; i++) {
+    const s0 = Math.floor(i * bar * SR), len = Math.floor((bar + .3) * SR), ch = chords[i % 4];
+    for (const nn of ch) for (const det of [-.12, .12]) {
+      const f = n2f(nn + 12) * Math.pow(2, det / 12), w = 2 * Math.PI * f / SR;
+      for (let k = 0; k < len && s0 + k < n; k++) { const x = k / SR, e = Math.min(x / .6, 1) * clamp((bar + .3 - x) / .6); out[s0 + k] += .035 * e * (Math.sin(w * k) + .3 * Math.sin(2 * w * k)); }
+    }
+  }
+  const arp = [0, 1, 2, 3, 2, 1, 3, 2];
+  for (let i = 0; i * beat / 2 < dur - 1.2; i++) {
+    const t0 = i * beat / 2; if (t0 < bar * .5) continue;
+    const f = n2f(chords[Math.floor(t0 / bar) % 4][arp[i % 8]] + 24), w = 2 * Math.PI * f / SR, s0 = Math.floor(t0 * SR);
+    for (let k = 0; k < SR * .6 && s0 + k < n; k++) { const x = k / SR; out[s0 + k] += .06 * Math.exp(-x * 7) * (Math.sin(w * k) + .4 * Math.sin(2 * w * k) * Math.exp(-x * 12)); }
+  }
+  for (let i = 0; i * beat < dur - 1.5; i++) {
+    const t0 = i * beat; if (t0 < dropAt) continue; const s0 = Math.floor(t0 * SR);
+    if (i % 2 === 0) { let ph = 0; for (let k = 0; k < SR * .35 && s0 + k < n; k++) { const x = k / SR; ph += 2 * Math.PI * (50 + 90 * Math.exp(-x * 30)) / SR; out[s0 + k] += .42 * Math.exp(-x * 9) * Math.sin(ph); } }
+    else for (let k = 0; k < SR * .35 && s0 + k < n; k++) out[s0 + k] += .1 * Math.exp(-k / SR * 22) * (Math.random() * 2 - 1);
+    const h0 = Math.floor((t0 + beat / 2) * SR); for (let k = 0; k < SR * .05 && h0 + k < n; k++) out[h0 + k] += .03 * Math.exp(-k / SR * 60) * (Math.random() * 2 - 1);
+  }
+  let pk = 0; for (let k = 0; k < n; k++) { out[k] = Math.tanh(out[k] * 1.3); pk = Math.max(pk, Math.abs(out[k])); }
+  const g = .85 / (pk || 1); for (let k = 0; k < n; k++) { L[k] = out[k] * g; R[k] = (k >= 90 ? out[k - 90] : 0) * g * .97; }
+  return [L, R];
+}
+async function buildAudio(TL) {
+  const dur = TL.total, len = Math.ceil(dur * SR), hasVoice = TL.scenes.some(s => state.voices[s.key]);
+  if (state.music.mode === 'none' && !hasVoice) return null;
+  const oc = new OfflineAudioContext(2, len, SR);
+  if (state.music.mode !== 'none') {
+    let buf;
+    if (state.music.mode === 'builtin') { const [l, r] = synthMusic(dur, TL.scenes[1] ? TL.scenes[1].start : 2.8, state.template); buf = oc.createBuffer(2, len, SR); buf.copyToChannel(l, 0); buf.copyToChannel(r, 1); }
+    else buf = state.music.buffer;
+    if (buf) {
+      const src = oc.createBufferSource(); src.buffer = buf; src.loop = state.music.mode === 'upload';
+      const g = oc.createGain(), base = state.music.vol * (state.music.mode === 'upload' ? .8 : 1), duck = base * .3;
+      g.gain.setValueAtTime(0, 0); g.gain.linearRampToValueAtTime(base, .4);
+      for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const a = s.start + .35, b = a + v.duration;
+        g.gain.setValueAtTime(base, Math.max(.41, a - .3)); g.gain.linearRampToValueAtTime(duck, a); g.gain.setValueAtTime(duck, b); g.gain.linearRampToValueAtTime(base, b + .4); }
+      g.gain.setValueAtTime(base, Math.max(.5, dur - 2)); g.gain.linearRampToValueAtTime(0, dur);
+      src.connect(g).connect(oc.destination); src.start(0);
+    }
+  }
+  for (const s of TL.scenes) { const v = state.voices[s.key]; if (!v) continue; const src = oc.createBufferSource(); src.buffer = v; src.connect(oc.destination); src.start(s.start + .35); }
+  return await oc.startRendering();
+}
+
+/* ======================= EXPORT ======================= */
+const status = m => $('#status').textContent = m, bar = p => $('#bar').style.width = (p * 100).toFixed(1) + '%';
+async function pickVideo() {
+  const tries = [['avc1.640028', 'avc'], ['avc1.4d0028', 'avc'], ['avc1.42003e', 'avc'], ['avc1.420028', 'avc'], ['vp09.00.40.08', 'vp9']];
+  for (const [codec, mux] of tries) for (const hw of ['prefer-hardware', 'no-preference']) {
+    const cfg = { codec, width: W, height: H, bitrate: 5e6, framerate: FPS, hardwareAcceleration: hw, latencyMode: 'quality' }; if (mux === 'avc') cfg.avc = { format: 'avc' };
+    try { const r = await VideoEncoder.isConfigSupported(cfg); if (r.supported) return { cfg, mux }; } catch (e) { }
+  }
+  return null;
+}
+async function pickAudio() {
+  if (!('AudioEncoder' in window)) return null;
+  for (const [codec, mux] of [['mp4a.40.2', 'aac'], ['opus', 'opus']]) {
+    const cfg = { codec, sampleRate: SR, numberOfChannels: 2, bitrate: 160000 };
+    try { const r = await AudioEncoder.isConfigSupported(cfg); if (r.supported) return { cfg, mux }; } catch (e) { }
+  }
+  return null;
+}
+let lastURL = null;
+$('#exportBtn').onclick = async () => {
+  if (!('VideoEncoder' in window)) { showWarn('This browser cannot create videos. Please open this page in Google Chrome or Microsoft Edge on a laptop or Android phone.'); return; }
+  if (!state.client || !state.client.sub.usable) { lock(); return; }
+  if (!state.photos.length) { toast('Add at least one photo or video first.'); return; }
+  if (playing) $('#playBtn').click();
+  const btn = $('#exportBtn'); btn.disabled = true; exporting = true; $('#res').style.display = 'none'; $('#supportWarn').style.display = 'none';
+  try {
+    await document.fonts.ready;
+    const TL = timeline(), frames = Math.ceil(TL.total * FPS);
+    status('Preparing…'); bar(0);
+    const vsel = await pickVideo(); if (!vsel) throw new Error('No supported video encoder in this browser. Use Chrome or Edge.');
+    status('Checking your plan…');
+    const rs = await api('/api/reel-start', { method: 'POST' }); state.client.usage = rs.usage; renderAccount();
+    status('Mixing voice and music…');
+    const audio = await buildAudio(TL); const asel = audio ? await pickAudio() : null;
+    const notes = [];
+    if (vsel.mux !== 'avc') notes.push('H.264 is not available in this browser, so the video uses VP9 — it may not upload to Instagram. Use Chrome/Edge on Windows, Mac or Android.');
+    if (audio && !asel) notes.push('This browser cannot encode audio, so the video has no sound.');
+    if (asel && asel.mux === 'opus') notes.push('Sound uses Opus (AAC not available here). For Instagram, create the video in Chrome on Windows/Mac/Android.');
+    const muxer = new Mp4Muxer.Muxer({ target: new Mp4Muxer.ArrayBufferTarget(), video: { codec: vsel.mux, width: W, height: H, frameRate: FPS },
+      audio: asel ? { codec: asel.mux, sampleRate: SR, numberOfChannels: 2 } : undefined, fastStart: 'in-memory', firstTimestampBehavior: 'offset' });
+    let encErr = null;
+    if (asel) {
+      status('Encoding sound…');
+      const ae = new AudioEncoder({ output: (c, m) => muxer.addAudioChunk(c, m), error: e => encErr = e }); ae.configure(asel.cfg);
+      const L = audio.getChannelData(0), R = audio.getChannelData(1), step = 4800;
+      for (let i = 0; i < audio.length; i += step) {
+        const n = Math.min(step, audio.length - i), buf = new Float32Array(n * 2); buf.set(L.subarray(i, i + n), 0); buf.set(R.subarray(i, i + n), n);
+        const ad = new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round(i / SR * 1e6), data: buf }); ae.encode(ad); ad.close();
+      }
+      await ae.flush(); ae.close();
+    }
+    const ve = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: e => encErr = e }); ve.configure(vsel.cfg);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const cx = cv.getContext('2d');
+    const t0 = performance.now();
+    for (let i = 0; i < frames; i++) {
+      if (encErr) throw encErr;
+      const t = i / FPS; await syncVideos(TL, t); drawFrame(cx, t, TL);
+      const vf = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+      ve.encode(vf, { keyFrame: i % (FPS * 2) === 0 }); vf.close();
+      while (ve.encodeQueueSize > 6) await sleep(2);
+      if (i % 6 === 0) { bar(i / frames * .97); const el = (performance.now() - t0) / 1000, eta = el / (i + 1) * (frames - i - 1); status(`Creating video… ${Math.round(i / frames * 100)}% · about ${Math.ceil(eta)}s left`); await sleep(0); }
+    }
+    await ve.flush(); ve.close(); if (encErr) throw encErr;
+    muxer.finalize();
+    const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
+    if (lastURL) URL.revokeObjectURL(lastURL); lastURL = URL.createObjectURL(blob);
+    const name = ((state.brand.name || 'reel') + '-' + (state.prop.title || '') + '-' + (state.prop.location || '')).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) + '.mp4';
+    $('#outVid').src = lastURL; $('#dlBtn').href = lastURL; $('#dlBtn').download = name; $('#res').style.display = 'flex';
+    const file = new File([blob], name, { type: 'video/mp4' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { $('#shareBtn').style.display = ''; $('#shareBtn').onclick = () => navigator.share({ files: [file], title: state.prop.title }).catch(() => { }); }
+    else $('#shareBtn').style.display = 'none';
+    bar(1); status(`✓ Done · ${(blob.size / 1048576).toFixed(1)} MB · ${TL.total.toFixed(1)} sec — tap Download`);
+    if (notes.length) showWarn(notes.join(' '));
+    window.__lastExport = { size: blob.size, video: vsel.mux, audio: asel && asel.mux, dur: TL.total, blob };
+  } catch (e) { console.error(e); status('✕ ' + (e.message || e)); window.__lastExport = { error: String(e && e.message || e) }; if (e.status === 402) refreshMe(); }
+  btn.disabled = false; exporting = false;
+};
+function showWarn(m) { const w = $('#supportWarn'); w.textContent = m; w.style.display = 'block'; }
+
+/* ======================= ACCOUNT / LOGIN / LOCK / PAY ======================= */
+const STATE = { active: ['active', 'Active'], due: ['due', 'Renew soon'], grace: ['grace', 'Payment overdue'], expired: ['expired', 'Expired'], paused: ['paused', 'Paused'] };
+async function applyClient(c, first) {
+  state.client = c;
+  Object.assign(state.brand, { name: c.name || '', phone: c.phone || '', tagline: c.tagline || '', main: c.main || '#0E1B2A', accent: c.accent || '#E8BB5C', credit: c.credit || '' });
+  state.brand.logo = c.logo ? await loadImg(c.logo).catch(() => null) : null;
+  if (first) { state.template = THEMES[c.template] ? c.template : 'classic'; setLang(c.lang || 'en', true); }
+  $('#hName').textContent = c.name || 'Property Reel Maker';
+  $('#hLogo').innerHTML = c.logo ? `<img src="${esc(c.logo)}">` : '▶';
+  renderStyles(); renderAccount(); renderAiBox(); refresh(true);
+  if (!c.sub.usable) lock(); else $('#lockOv').classList.remove('on');
+}
+function renderAccount() {
+  const c = state.client; if (!c) return; const st = STATE[c.sub.state] || ['paused', c.sub.state], u = c.usage || {};
+  $('#aLogo').innerHTML = c.logo ? `<img src="${esc(c.logo)}">` : esc((c.name || c.id).slice(0, 2).toUpperCase());
+  $('#aName').textContent = c.name || c.id;
+  const left = c.sub.state === 'grace' ? `${c.sub.graceLeft} day(s) to pay` : c.sub.daysLeft ? `${c.sub.daysLeft} days left` : '';
+  $('#aChips').innerHTML = `<span class="chip ${st[0]}">● ${st[1]}</span><span class="chip plan">${esc(c.planName)} · ${inr(c.planAmount)}/30 days</span><span class="note" style="margin:0">Valid till ${fmtD(c.sub.paidUntil)}${left ? ' · ' + left : ''}</span>`;
+  const rp = c.reelLimit ? Math.min(100, u.reels / c.reelLimit * 100) : 0, cp = c.charLimit ? Math.min(100, u.chars / c.charLimit * 100) : 0;
+  $('#aMeters').innerHTML = `<div class="meter"><div class="t"><span>Reels this month</span><b>${u.reels || 0} / ${c.reelLimit || '∞'}</b></div><div class="tr"><i style="width:${rp}%"></i></div></div>` +
+    (c.aiVoice ? `<div class="meter"><div class="t"><span>AI voice used</span><b>${Math.round(cp)}%</b></div><div class="tr"><i style="width:${cp}%"></i></div></div>` : '');
+  $('#aExtra').textContent = c.extras && c.extras.length ? 'Included: ' + c.extras.join(' · ') : '';
+  $('#reelsLeft').textContent = c.reelLimit ? Math.max(0, c.reelLimit - (u.reels || 0)) : '∞';
+  const bn = $('#subBanner'); bn.className = 'banner';
+  if (c.sub.state === 'due') { bn.classList.add('due'); $('#subBannerTxt').textContent = `Your plan ends on ${fmtD(c.sub.paidUntil)} (${c.sub.daysLeft} day${c.sub.daysLeft > 1 ? 's' : ''} left). Renew to keep creating reels.`; }
+  if (c.sub.state === 'grace') { bn.classList.add('grace'); $('#subBannerTxt').textContent = `Your plan expired on ${fmtD(c.sub.paidUntil)}. The tool will lock in ${c.sub.graceLeft} day(s) — please renew.`; }
+}
+function lock() {
+  const c = state.client; if (!c) return;
+  $('#lkLogo').innerHTML = c.logo ? `<img src="${esc(c.logo)}">` : '🔒';
+  $('#lkTitle').textContent = c.sub.state === 'paused' ? 'Account paused' : 'Subscription expired';
+  $('#lkText').innerHTML = c.sub.state === 'paused' ? 'Your account has been paused. Please contact Think Through Technology.' : `Your ${esc(c.planName)} plan expired on ${fmtD(c.sub.paidUntil)}.<br>Renew for <b>${inr(c.planAmount)}</b> to get 30 more days.`;
+  $('#lkPay').style.display = c.sub.state === 'paused' || !c.planAmount ? 'none' : '';
+  $('#lkWa').href = 'https://wa.me/918015304105?text=' + encodeURIComponent(`Hi, I want to renew my Reel Maker plan. Client code: ${c.id}`);
+  $('#lockOv').classList.add('on');
+}
+async function refreshMe() { try { const j = await api('/api/me'); await applyClient(j.client); } catch (e) { } }
+function doLogout() { TOKEN = ''; LS.del('reelToken'); state.client = null; $('#lockOv').classList.remove('on'); $('#loginOv').classList.add('on'); $('#lPin').value = ''; }
+$('#logoutBtn').onclick = doLogout; $('#lkOut').onclick = doLogout;
+$('#loginForm').onsubmit = async e => {
+  e.preventDefault(); $('#lErr').textContent = ''; $('#lBtn').disabled = true;
+  try { const j = await api('/api/login', { method: 'POST', body: { code: $('#lCode').value.trim(), pin: $('#lPin').value.trim() } });
+    TOKEN = j.token; LS.set('reelToken', TOKEN); LS.set('reelCode', j.client.id); $('#loginOv').classList.remove('on'); await applyClient(j.client, true); await checkReturn(); }
+  catch (err) { $('#lErr').textContent = err.message === 'Failed to fetch' ? 'Cannot reach the server. Check your internet.' : err.message; }
+  $('#lBtn').disabled = false;
+};
+document.addEventListener('click', async e => {
+  if (!e.target.closest('[data-renew]')) return;
+  const b = e.target.closest('[data-renew]'); b.disabled = true; $('#lkErr').textContent = '';
+  try {
+    const j = await api('/api/pay/create', { method: 'POST', body: { returnUrl: location.origin + location.pathname } });
+    await new Promise((res, rej) => { if (window.Cashfree) return res(); const s = document.createElement('script'); s.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the payment page.')); document.head.appendChild(s); });
+    window.Cashfree({ mode: j.mode }).checkout({ paymentSessionId: j.paymentSessionId, redirectTarget: '_self' });
+  } catch (err) { $('#lkErr').textContent = err.message; toast(err.message); }
+  b.disabled = false;
+});
+async function checkReturn() {
+  const q = new URLSearchParams(location.search), oid = q.get('order_id'); if (!oid || !TOKEN) return;
+  history.replaceState(null, '', location.pathname);
+  try { const j = await api('/api/pay/verify?order_id=' + encodeURIComponent(oid));
+    if (j.status === 'PAID') { await applyClient(j.client); toast('✓ Payment received — 30 days added. Thank you!'); }
+    else toast('Payment not completed (' + j.status + '). If money was deducted, it will update in a few minutes.');
+  } catch (e) { toast(e.message); }
+}
+
+/* ======================= DEMO ======================= */
+$('#demoBtn').onclick = async () => {
+  Object.assign(state.prop, { label: 'NEW LISTING', title: '2 BHK Independent House', location: 'Mangadu, Chennai', price: '₹ 48 Lakhs', priceNote: 'Slightly negotiable', chips: '1,150 sq ft, East facing, Ready to move', features: 'DTCP Approved\n30 ft Road\nSchool 500 m\nBus stop 2 min\nCar parking', badge: 'Only 2 houses left' });
+  syncForm(); state.photos = []; state.voices = {}; state.lines = {}; state.edited = {};
+  const meta = { exterior: {}, hall: { tag: 'Living area', title: 'Spacious Hall', sub: 'Wood-panel TV wall · Big windows' }, bedroom: { tag: 'Bedrooms', title: '2 Bedrooms', sub: 'Attached bathroom · Cross ventilation' }, kitchen: { tag: 'Kitchen', title: 'Modular Kitchen', sub: 'Chimney · Granite counter · Storage' } };
+  for (const k of ['exterior', 'hall', 'bedroom', 'kitchen']) state.photos.push(await makePhoto(DEMO[k], meta[k]));
+  renderPhotos(); ptime = 0; refresh(true); toast('Sample property loaded — this is just for practice');
+};
+
+/* ======================= INIT ======================= */
+(async () => {
+  renderStyles(); syncForm();
+  if (!('VideoEncoder' in window)) showWarn('This browser cannot create videos. Please use Google Chrome or Microsoft Edge (laptop or Android).');
+  await Promise.all(['400', '500', '700'].map(w => document.fonts.load(`${w} 40px Poppins`)).concat(document.fonts.load('700 40px "Playfair Display"')));
+  $('#lCode').value = LS.get('reelCode', '');
+  TOKEN = LS.get('reelToken', '');
+  if (TOKEN) { try { const j = await api('/api/me'); await applyClient(j.client, true); await checkReturn(); } catch (e) { doLogout(); } }
+  else $('#loginOv').classList.add('on');
+  refresh(true);
+  window.__ready = true;
+  window.__dbg = { state, timeline, drawFrame, refresh, renderPhotos, makeVideo, addFiles, pv, TH };
+})();
+}
+</script>
+</body>
+</html>

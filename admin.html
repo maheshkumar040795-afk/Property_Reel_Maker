@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Reel Maker Admin · Think Through Technology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0E1B2A;--gold:#E8BB5C;--bg:#F4F6F9;--card:#fff;--line:#E3E7ED;--muted:#6B7685;--ink:#17202B;--ok:#1F8A5B;--due:#B7791F;--bad:#C2412D;--off:#6B7685}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Poppins,system-ui,sans-serif}
+header{background:var(--navy);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+header .logo{width:34px;height:34px;border-radius:9px;background:var(--gold);display:grid;place-items:center;color:var(--navy);font-weight:700}
+header h1{font-size:17px;margin:0;font-weight:600}header small{opacity:.6;font-size:12px;display:block;margin-top:-2px}
+header .sp{flex:1}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;text-decoration:none;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}.btn.gold{background:var(--gold);color:var(--navy)}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}.btn.red{background:#fff;color:var(--bad);border:1.5px solid #F1C9C1}
+.btn.green{background:var(--ok)}
+header .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:8px}
+main{max-width:1180px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:24px;line-height:1.2}.stat span{font-size:12.5px;color:var(--muted)}
+.bar2{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.bar2 .grow{flex:1}
+.search{font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;min-width:220px;width:100%}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:20px;padding:3px 10px}
+.chip.active{background:#E3F4EC;color:var(--ok)}.chip.due{background:#FDF1DC;color:var(--due)}.chip.grace{background:#FDE7D8;color:#B5541B}
+.chip.expired{background:#FBE4E0;color:var(--bad)}.chip.paused{background:#ECEEF2;color:var(--off)}
+.chip.plan{background:#EEF1F6;color:var(--navy)}
+.clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.cl{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.cl .top{display:flex;gap:12px;align-items:center}
+.cl .lg{width:46px;height:46px;border-radius:12px;background:#F1F3F6;display:grid;place-items:center;overflow:hidden;font-weight:700;color:var(--navy);flex:none}
+.cl .lg img{max-width:100%;max-height:100%}
+.cl h3{margin:0;font-size:15.5px}.cl .code{font-size:12px;color:var(--muted)}
+.meter{font-size:12.5px;color:var(--muted)}.meter .t{display:flex;justify-content:space-between}
+.meter .tr{height:7px;border-radius:5px;background:#EDF0F4;overflow:hidden;margin-top:4px}.meter .tr i{display:block;height:100%;background:var(--navy);border-radius:5px}
+.meter .tr i.hi{background:var(--bad)}
+.cl .acts{display:flex;gap:6px;flex-wrap:wrap}
+.cl .dates{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.cl .extra{font-size:12.5px;background:#FFF8E8;border-radius:10px;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(10,18,28,.55);display:none;align-items:flex-start;justify-content:center;z-index:20;overflow:auto;padding:30px 14px}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:760px;padding:22px;position:relative}
+.modal.small{max-width:460px}
+.modal h2{margin:0 0 4px;font-size:19px}.modal .x{position:absolute;right:14px;top:12px;border:0;background:none;font-size:24px;cursor:pointer;color:var(--muted)}
+.sec{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.sec h4{margin:0 0 10px;font-size:13.5px;color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid .full{grid-column:1/-1}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:#3B4654}
+input[type=text],input[type=password],input[type=tel],input[type=email],input[type=number],input[type=date],textarea,select{font:inherit;font-size:14px;font-weight:400;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;color:var(--ink);width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#7C93B3}
+input[type=color]{width:100%;height:40px;border:1.5px solid var(--line);border-radius:10px;padding:3px;background:#fff}
+.toggle{flex-direction:row;align-items:center;gap:8px;font-weight:500}.toggle input{width:17px;height:17px;accent-color:var(--navy)}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.plan{border:1.5px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;background:#fff;text-align:left;font:inherit}
+.plan b{display:block;font-size:14.5px}.plan .pr{font-size:18px;font-weight:700;color:var(--navy)}.plan small{display:block;color:var(--muted);font-size:12px;line-height:1.35;margin-top:4px}
+.plan.on{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy) inset;background:#F6F8FB}
+.note{font-size:12px;color:var(--muted)}
+.keybox{display:flex;gap:8px;align-items:center}
+.saved{font-size:12.5px;color:var(--ok);font-weight:600}
+.pinshow{font-size:30px;font-weight:700;letter-spacing:6px;text-align:center;background:#F6F8FB;border-radius:12px;padding:14px;margin:12px 0}
+.foot{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.foot .l{margin-right:auto}
+.logoprev{width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line);display:grid;place-items:center;overflow:hidden;font-size:11px;color:var(--muted);flex:none}
+.logoprev img{max-width:100%;max-height:100%}
+.hist{width:100%;border-collapse:collapse;font-size:13px}.hist td,.hist th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}.hist td.n{text-align:right;white-space:nowrap}
+.login{max-width:400px;margin:70px auto}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+.warnline{font-size:12.5px;background:#FFF5E6;border:1px solid #F3D9A6;color:#7A5410;border-radius:10px;padding:8px 10px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;display:none;z-index:40}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.grid3,.plans{grid-template-columns:1fr}main{padding:14px}header small{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">▶</div><div><h1>Reel Maker Admin</h1><small>Think Through Technology</small></div>
+  <div class="sp"></div>
+  <button class="btn ghost sm" id="setBtn" style="display:none">⚙ Settings</button>
+  <button class="btn ghost sm" id="outBtn" style="display:none">Log out</button>
+</header>
+
+<!-- LOGIN -->
+<main id="loginView">
+  <div class="card login">
+    <h2 style="margin:0 0 6px">Admin login</h2>
+    <p class="note" style="margin:0 0 16px">Only for Think Through Technology.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <label>Server URL (Cloudflare Worker)<input type="text" id="apiUrl" placeholder="https://reel-api.yourname.workers.dev"></label>
+      <label>Admin password<input type="password" id="adminPw" autocomplete="current-password"></label>
+      <div class="err" id="loginErr"></div>
+      <button class="btn gold" id="loginBtn" style="justify-content:center">Log in</button>
+    </div>
+  </div>
+</main>
+
+<!-- DASHBOARD -->
+<main id="dashView" style="display:none">
+  <div class="stats" id="stats"></div>
+  <div class="warnline" id="setupWarn" style="display:none;margin-bottom:14px"></div>
+  <div class="bar2">
+    <div class="grow"><input class="search" id="q" placeholder="Search clients…"></div>
+    <select id="fState" class="search" style="width:auto;min-width:150px"><option value="">All statuses</option><option value="active">Active</option><option value="due">Due soon</option><option value="grace">Grace</option><option value="expired">Expired</option><option value="paused">Paused</option></select>
+    <button class="btn gold" id="addBtn">+ Add client</button>
+  </div>
+  <div class="clients" id="list"></div>
+</main>
+
+<!-- CLIENT EDITOR -->
+<div class="mask" id="edMask"><div class="modal">
+  <button class="x" data-close>×</button>
+  <h2 id="edTitle">Add client</h2>
+  <p class="note" style="margin:0">Clients log in with their <b>client code</b> and <b>PIN</b>. Keys are never shown to them.</p>
+
+  <div class="sec"><h4>Plan</h4>
+    <div class="plans" id="planBox"></div>
+    <div class="grid3" style="margin-top:12px">
+      <label>Amount (₹ / 30 days)<input type="number" id="f_planAmount" min="0"></label>
+      <label>Reels per month<input type="number" id="f_reelLimit" min="0"></label>
+      <label>AI voice characters / month<input type="number" id="f_charLimit" min="0"></label>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <label class="toggle"><input type="checkbox" id="f_aiVoice"> AI voice (ElevenLabs) allowed</label>
+      <label>Grace days after expiry<input type="number" id="f_graceDays" min="0" value="3"></label>
+    </div>
+  </div>
+
+  <div class="sec"><h4>Login</h4>
+    <div class="grid">
+      <label>Client code<input type="text" id="f_id" placeholder="RKREAL" style="text-transform:uppercase"></label>
+      <label><span id="pinLbl">PIN (4–8 digits, blank = auto)</span><input type="text" id="f_pin" inputmode="numeric" maxlength="8" placeholder="Leave blank to keep / auto-generate"></label>
+      <label id="trialWrap">Free trial days (new client)<input type="number" id="f_trialDays" min="0" value="0"></label>
+      <label>Status<select id="f_status"><option value="active">Active</option><option value="paused">Paused (blocked)</option></select></label>
+    </div>
+  </div>
+
+  <div class="sec"><h4>Branding (shown in their reels)</h4>
+    <div class="grid">
+      <label>Business name<input type="text" id="f_name" placeholder="RK Real Estate"></label>
+      <label>Phone / WhatsApp (shown in video)<input type="tel" id="f_phone" placeholder="98765 43210"></label>
+      <label class="full">Tagline<input type="text" id="f_tagline" placeholder="Plots · Houses · Apartments"></label>
+      <label>Main colour (dark)<input type="color" id="f_main" value="#0E1B2A"></label>
+      <label>Accent colour<input type="color" id="f_accent" value="#E8BB5C"></label>
+      <div class="full" style="display:flex;gap:12px;align-items:center">
+        <div class="logoprev" id="logoPrev">No logo</div>
+        <button class="btn ghost sm" id="logoBtn">Upload logo</button><button class="btn ghost sm" id="logoClr">Remove</button>
+        <input type="file" id="logoFile" accept="image/*" hidden>
+      </div>
+      <label>Default style<select id="f_template"><option value="classic">Classic</option><option value="luxury">Luxury (black + gold)</option><option value="bright">Bright / Budget homes</option><option value="plots">Plots & Land (green)</option></select></label>
+      <label>Default language<select id="f_lang"><option value="en">English</option><option value="ta">Tamil</option></select></label>
+      <label class="full">Footer credit<input type="text" id="f_credit" value="Video by Think Through Technology"></label>
+    </div>
+  </div>
+
+  <div class="sec"><h4>AI voice (ElevenLabs)</h4>
+    <div class="grid">
+      <label>Voice ID (cloned voice)<input type="text" id="f_voiceId" placeholder="Copy from ElevenLabs → My Voices"></label>
+      <label>Model<select id="f_model"><option value="eleven_multilingual_v2">Multilingual v2 (Tamil + English)</option><option value="eleven_flash_v2_5">Flash v2.5 (cheaper)</option><option value="eleven_v3">Eleven v3</option></select></label>
+      <label class="full">Client's own API key (optional — blank uses your default key)
+        <div class="keybox"><input type="password" id="f_key" placeholder="sk_… (write-only, never shown again)" autocomplete="off"><button class="btn ghost sm" id="keyClr">Remove</button></div>
+        <span class="saved" id="keyState"></span></label>
+      <div class="full" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn ghost sm" id="testVoice">▶ Test voice</button><span class="note" id="testState">Save first, then test.</span></div>
+    </div>
+  </div>
+
+  <div class="sec"><h4>Billing (for Cashfree receipts)</h4>
+    <div class="grid">
+      <label>Billing phone<input type="tel" id="f_billingPhone" placeholder="10-digit mobile"></label>
+      <label>Billing email<input type="email" id="f_billingEmail" placeholder="optional"></label>
+      <label class="full">Support line shown to client<input type="text" id="f_support" value="Think Through Technology · 8015304105"></label>
+      <label class="full">Notes (only you see this)<textarea id="f_notes" rows="2"></textarea></label>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="btn red sm l" id="delBtn">Delete client</button>
+    <button class="btn ghost sm" id="kickBtn">Log out their devices</button>
+    <button class="btn ghost" data-close>Cancel</button>
+    <button class="btn gold" id="saveBtn">Save client</button>
+  </div>
+  <div class="err" id="edErr" style="text-align:right;margin-top:8px"></div>
+</div></div>
+
+<!-- PAY MODAL -->
+<div class="mask" id="payMask"><div class="modal small">
+  <button class="x" data-close>×</button>
+  <h2>Mark as paid</h2><p class="note" id="payWho" style="margin:0"></p>
+  <div class="grid" style="margin-top:14px">
+    <label>Days to add<input type="number" id="p_days" value="30" min="1"></label>
+    <label>Amount (₹)<input type="number" id="p_amount" min="0"></label>
+    <label>Method<select id="p_method"><option>UPI</option><option>Cash</option><option>Bank transfer</option><option>Cashfree</option><option>Free / complimentary</option></select></label>
+    <label>Note<input type="text" id="p_note" placeholder="Txn ID / remarks"></label>
+  </div>
+  <p class="note" id="payNew"></p>
+  <div class="foot"><button class="btn ghost" data-close>Cancel</button><button class="btn green" id="payOk">✓ Add days</button></div>
+</div></div>
+
+<!-- HISTORY -->
+<div class="mask" id="histMask"><div class="modal small">
+  <button class="x" data-close>×</button>
+  <h2>Payment history</h2><p class="note" id="histWho" style="margin:0 0 10px"></p>
+  <div id="histBody"></div>
+  <div class="foot"><button class="btn ghost" id="setDateBtn">Change expiry date</button><button class="btn" data-close>Close</button></div>
+</div></div>
+
+<!-- PIN SHOW -->
+<div class="mask" id="pinMask"><div class="modal small">
+  <h2>Client login details</h2>
+  <p class="note" style="margin:0">Share these with the client. The PIN is shown only now.</p>
+  <div class="pinshow" id="pinShow"></div>
+  <div class="foot"><button class="btn ghost" id="pinCopy">Copy message</button><button class="btn green" id="pinWa">Send on WhatsApp</button><button class="btn" data-close>Done</button></div>
+</div></div>
+
+<!-- SETTINGS -->
+<div class="mask" id="setMask"><div class="modal small">
+  <button class="x" data-close>×</button>
+  <h2>Settings</h2>
+  <div class="sec" style="border:0;margin-top:6px;padding-top:0"><h4>Default ElevenLabs API key</h4>
+    <p class="note" style="margin:0 0 8px">Used for every client that has no own key. Write-only: you can replace or remove it, but never read it back.</p>
+    <div class="keybox"><input type="password" id="defKey" placeholder="sk_…" autocomplete="off"><button class="btn sm" id="defSave">Save</button><button class="btn ghost sm" id="defClr">Remove</button></div>
+    <span class="saved" id="defState"></span>
+  </div>
+  <div class="sec"><h4>Client page link</h4>
+    <label>Reel Maker URL (sent to clients)<input type="text" id="appUrl"></label>
+  </div>
+  <div class="sec"><h4>Payments</h4><p class="note" id="cfState" style="margin:0"></p></div>
+  <div class="foot"><button class="btn" data-close>Close</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const $ = s => document.querySelector(s);
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v } catch (e) { return d } }, set(k, v) { try { localStorage.setItem(k, v) } catch (e) { } }, del(k) { try { localStorage.removeItem(k) } catch (e) { } } };
+let API = LS.get('reelAdminApi', ''), TOKEN = LS.get('reelAdminToken', ''), PLANS = {}, SETTINGS = {}, CLIENTS = [], cur = null, logoData = '', curPlan = 'basic';
+const DEF_APP = 'https://maheshkumar040795-afk.github.io/Property_Reel_Maker/';
+const toast = m => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 2600); };
+const fmtD = t => t ? new Date(t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const STATE = { active: ['active', 'Active'], due: ['due', 'Due soon'], grace: ['grace', 'Grace period'], expired: ['expired', 'Expired'], paused: ['paused', 'Paused'] };
+
+async function api(path, opt = {}) {
+  const r = await fetch(API.replace(/\/+$/, '') + path, { ...opt, headers: { 'content-type': 'application/json', ...(TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {}), ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+  if (r.status === 401 && path !== '/api/admin/login') { logout(); throw new Error('Session expired, log in again.'); }
+  const ct = r.headers.get('content-type') || '';
+  if (!ct.includes('json')) { if (!r.ok) throw new Error('Error ' + r.status); return r; }
+  const j = await r.json(); if (!r.ok) throw new Error(j.error || ('Error ' + r.status)); return j;
+}
+
+/* ---------- login ---------- */
+$('#apiUrl').value = API;
+$('#loginBtn').onclick = async () => {
+  API = $('#apiUrl').value.trim().replace(/\/+$/, ''); $('#loginErr').textContent = '';
+  if (!/^https?:\/\//.test(API)) { $('#loginErr').textContent = 'Enter the Worker URL starting with https://'; return; }
+  try { const j = await api('/api/admin/login', { method: 'POST', body: { password: $('#adminPw').value } }); TOKEN = j.token; LS.set('reelAdminApi', API); LS.set('reelAdminToken', TOKEN); $('#adminPw').value = ''; boot(); }
+  catch (e) { $('#loginErr').textContent = e.message === 'Failed to fetch' ? 'Cannot reach the server. Check the URL.' : e.message; }
+};
+$('#adminPw').onkeydown = e => { if (e.key === 'Enter') $('#loginBtn').click(); };
+function logout() { TOKEN = ''; LS.del('reelAdminToken'); $('#loginView').style.display = ''; $('#dashView').style.display = 'none'; $('#outBtn').style.display = 'none'; $('#setBtn').style.display = 'none'; }
+$('#outBtn').onclick = logout;
+
+async function boot() {
+  try {
+    SETTINGS = await api('/api/admin/settings'); PLANS = SETTINGS.plans || {};
+    $('#loginView').style.display = 'none'; $('#dashView').style.display = ''; $('#outBtn').style.display = ''; $('#setBtn').style.display = '';
+    await load();
+  } catch (e) { $('#loginErr').textContent = e.message; }
+}
+async function load() { const j = await api('/api/admin/clients'); CLIENTS = j.clients; render(); }
+
+/* ---------- dashboard ---------- */
+function render() {
+  const s = { active: 0, due: 0, grace: 0, expired: 0, paused: 0 }; let mrr = 0, chars = 0;
+  CLIENTS.forEach(c => { s[c.sub.state]++; if (c.sub.state !== 'expired' && c.sub.state !== 'paused') mrr += c.planAmount || 0; chars += (c.usage && c.usage.chars) || 0; });
+  $('#stats').innerHTML = [[CLIENTS.length, 'Clients'], [s.active, 'Active'], [s.due + s.grace, 'Due soon / grace'], [s.expired + s.paused, 'Expired / paused'], [inr(mrr), 'Monthly income (active)']]
+    .map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
+  const warn = [];
+  if (!SETTINGS.hasDefaultKey && !CLIENTS.some(c => c.hasOwnKey)) warn.push('No ElevenLabs key saved yet — open ⚙ Settings to add your default key.');
+  if (!SETTINGS.cashfree) warn.push('Cashfree is not connected, so clients cannot pay online yet. Use "Mark paid" for UPI/cash.');
+  if (SETTINGS.mock) warn.push('TEST MODE: AI voice is fake (MOCK_TTS=1). Remove it before going live.');
+  $('#setupWarn').style.display = warn.length ? '' : 'none'; $('#setupWarn').innerHTML = warn.map(esc).join('<br>');
+  const q = $('#q').value.toLowerCase(), f = $('#fState').value;
+  const L = CLIENTS.filter(c => (!q || (c.name + ' ' + c.id + ' ' + (c.phone || '')).toLowerCase().includes(q)) && (!f || c.sub.state === f));
+  if (!L.length) { $('#list').innerHTML = `<div class="empty card" style="grid-column:1/-1">${CLIENTS.length ? 'No clients match.' : 'No clients yet. Tap <b>+ Add client</b> to set up your first one.'}</div>`; return; }
+  $('#list').innerHTML = L.map(c => {
+    const st = STATE[c.sub.state] || ['paused', c.sub.state], u = c.usage || {}, P = PLANS[c.plan] || {};
+    const rPct = c.reelLimit ? Math.min(100, u.reels / c.reelLimit * 100) : 0, cPct = c.charLimit ? Math.min(100, u.chars / c.charLimit * 100) : 0;
+    const left = c.sub.state === 'grace' ? `${c.sub.graceLeft} grace day${c.sub.graceLeft > 1 ? 's' : ''} left` : c.sub.daysLeft ? `${c.sub.daysLeft} day${c.sub.daysLeft > 1 ? 's' : ''} left` : '';
+    return `<div class="cl" data-id="${esc(c.id)}">
+      <div class="top"><div class="lg">${c.logo ? `<img src="${esc(c.logo)}">` : esc((c.name || c.id).slice(0, 2).toUpperCase())}</div>
+        <div style="flex:1"><h3>${esc(c.name || c.id)}</h3><div class="code">Code: <b>${esc(c.id)}</b> · ${esc(c.phone || '')}</div></div></div>
+      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip ${st[0]}">● ${st[1]}</span><span class="chip plan">${esc(P.name || c.plan)} · ${inr(c.planAmount)}</span>${c.aiVoice ? `<span class="chip plan">🎙 AI voice${c.voiceId ? '' : ' (no Voice ID)'}</span>` : ''}</div>
+      <div class="dates"><span>Paid until: <b>${fmtD(c.paidUntil)}</b></span><span>${left}</span></div>
+      <div class="meter"><div class="t"><span>Reels this month</span><b>${u.reels || 0} / ${c.reelLimit || '∞'}</b></div><div class="tr"><i class="${rPct >= 90 ? 'hi' : ''}" style="width:${rPct}%"></i></div></div>
+      ${c.aiVoice ? `<div class="meter"><div class="t"><span>AI voice characters</span><b>${(u.chars || 0).toLocaleString('en-IN')} / ${c.charLimit ? c.charLimit.toLocaleString('en-IN') : '∞'}</b></div><div class="tr"><i class="${cPct >= 90 ? 'hi' : ''}" style="width:${cPct}%"></i></div></div>` : ''}
+      ${c.plan === 'premium' ? `<div class="extra"><span>📷 Shoot visit this period</span><label class="toggle" style="font-size:12.5px"><input type="checkbox" data-a="shoot" ${c.shootDone ? 'checked' : ''}> Done</label></div>` : ''}
+      <div class="acts"><button class="btn green sm" data-a="pay">✓ Mark paid</button><button class="btn ghost sm" data-a="edit">Edit</button><button class="btn ghost sm" data-a="wa">WhatsApp reminder</button><button class="btn ghost sm" data-a="hist">History</button></div>
+    </div>`;
+  }).join('');
+}
+$('#q').oninput = render; $('#fState').onchange = render;
+$('#list').onclick = e => {
+  const b = e.target.closest('[data-a]'); if (!b) return; const id = b.closest('.cl').dataset.id, c = CLIENTS.find(x => x.id === id);
+  ({ pay: () => openPay(c), edit: () => openEditor(c), wa: () => remind(c), hist: () => openHist(c), shoot: () => saveShoot(c, b.checked) })[b.dataset.a]();
+};
+async function saveShoot(c, v) { try { await api('/api/admin/clients', { method: 'POST', body: { id: c.id, shootDone: v } }); c.shootDone = v; toast(v ? 'Shoot marked done' : 'Shoot marked pending'); } catch (e) { toast(e.message); } }
+
+/* ---------- editor ---------- */
+const F = ['planAmount', 'reelLimit', 'charLimit', 'graceDays', 'id', 'name', 'phone', 'tagline', 'main', 'accent', 'template', 'lang', 'credit', 'voiceId', 'model', 'billingPhone', 'billingEmail', 'support', 'notes', 'status'];
+function renderPlans() {
+  $('#planBox').innerHTML = Object.entries(PLANS).map(([k, p]) => `<button class="plan ${k === curPlan ? 'on' : ''}" data-p="${k}"><b>${esc(p.name)}</b><span class="pr">${inr(p.amount)}</span><small>${p.reels} reels · ${p.aiVoice ? 'Cloned AI voice' : 'Own voice recording'}${p.extras.length ? ' · ' + p.extras.map(esc).join(' · ') : ''}</small></button>`).join('');
+}
+$('#planBox').onclick = e => { const b = e.target.closest('[data-p]'); if (!b) return; curPlan = b.dataset.p; const P = PLANS[curPlan];
+  $('#f_planAmount').value = P.amount; $('#f_reelLimit').value = P.reels; $('#f_charLimit').value = P.chars; $('#f_aiVoice').checked = P.aiVoice; renderPlans(); };
+function openEditor(c) {
+  cur = c || null; $('#edErr').textContent = ''; $('#f_key').value = ''; $('#f_pin').value = '';
+  $('#edTitle').textContent = c ? 'Edit ' + (c.name || c.id) : 'Add client';
+  const d = c || { planAmount: PLANS.basic.amount, reelLimit: PLANS.basic.reels, charLimit: 0, graceDays: 3, main: '#0E1B2A', accent: '#E8BB5C', template: 'classic', lang: 'en', credit: 'Video by Think Through Technology', model: 'eleven_multilingual_v2', support: 'Think Through Technology · 8015304105', status: 'active' };
+  F.forEach(k => { const el = $('#f_' + k); if (el) el.value = d[k] ?? ''; });
+  curPlan = (c && c.plan) || 'basic'; $('#f_aiVoice').checked = c ? !!c.aiVoice : false; renderPlans();
+  $('#f_id').disabled = !!c; $('#trialWrap').style.display = c ? 'none' : ''; $('#f_trialDays').value = 0;
+  $('#pinLbl').textContent = c ? 'New PIN (blank = keep current)' : 'PIN (4–8 digits, blank = auto)';
+  logoData = (c && c.logo) || ''; showLogo();
+  $('#keyState').textContent = c && c.hasOwnKey ? `✓ Own key saved (••••${c.keyLast4 || ''})` : (SETTINGS.hasDefaultKey ? 'Using your default key' : 'No key — add a default key in Settings');
+  $('#delBtn').style.display = c ? '' : 'none'; $('#kickBtn').style.display = c ? '' : 'none';
+  $('#testState').textContent = c ? '' : 'Save first, then test.';
+  $('#edMask').classList.add('on');
+}
+$('#addBtn').onclick = () => openEditor(null);
+function showLogo() { $('#logoPrev').innerHTML = logoData ? `<img src="${logoData}">` : 'No logo'; }
+$('#logoBtn').onclick = () => $('#logoFile').click(); $('#logoClr').onclick = () => { logoData = ''; showLogo(); };
+$('#logoFile').onchange = e => { const f = e.target.files[0]; if (!f) return; const img = new Image(); img.onload = () => {
+  const k = Math.min(1, 400 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); logoData = c.toDataURL('image/png'); if (logoData.length > 350000) logoData = c.toDataURL('image/jpeg', .85); showLogo(); URL.revokeObjectURL(img.src); };
+  img.src = URL.createObjectURL(f); e.target.value = ''; };
+$('#saveBtn').onclick = async () => {
+  const b = { isNew: !cur, plan: curPlan, aiVoice: $('#f_aiVoice').checked, logo: logoData };
+  F.forEach(k => { const el = $('#f_' + k); if (el) b[k] = el.value.trim(); }); b.id = b.id.toUpperCase();
+  const pin = $('#f_pin').value.trim(); if (pin) b.pin = pin; if (!cur) b.trialDays = Number($('#f_trialDays').value) || 0;
+  if (!b.name) { $('#edErr').textContent = 'Business name is required.'; return; }
+  if (b.aiVoice && !b.voiceId) { if (!confirm('AI voice is on but there is no Voice ID yet. Save anyway?')) return; }
+  $('#saveBtn').disabled = true;
+  try {
+    const r = await api('/api/admin/clients', { method: 'POST', body: b });
+    const key = $('#f_key').value.trim(); if (key) await api(`/api/admin/clients/${r.id}/key`, { method: 'POST', body: { key } });
+    $('#edMask').classList.remove('on'); await load(); toast('Saved');
+    if (r.pin) showPin(CLIENTS.find(c => c.id === r.id), r.pin);
+  } catch (e) { $('#edErr').textContent = e.message; }
+  $('#saveBtn').disabled = false;
+};
+$('#keyClr').onclick = async () => { if (!cur || !confirm('Remove this client\'s own key? They will use your default key.')) return; try { await api(`/api/admin/clients/${cur.id}/key`, { method: 'POST', body: { key: '' } }); $('#keyState').textContent = 'Removed — using default key'; await load(); } catch (e) { toast(e.message); } };
+$('#delBtn').onclick = async () => { if (!cur) return; const t = prompt(`Type ${cur.id} to delete this client permanently:`); if (t !== cur.id) return; try { await api('/api/admin/clients/' + cur.id, { method: 'DELETE' }); $('#edMask').classList.remove('on'); await load(); toast('Client deleted'); } catch (e) { toast(e.message); } };
+$('#kickBtn').onclick = async () => { if (!cur || !confirm('Log this client out on all devices? They will need their PIN again.')) return; try { await api(`/api/admin/clients/${cur.id}/logout-all`, { method: 'POST' }); toast('Logged out everywhere'); } catch (e) { toast(e.message); } };
+let testAudio = null;
+$('#testVoice').onclick = async () => {
+  if (!cur) { $('#testState').textContent = 'Save the client first.'; return; } $('#testState').textContent = 'Generating…';
+  try { const r = await api(`/api/admin/clients/${cur.id}/test-voice`, { method: 'POST', body: { text: (cur.lang === 'ta' ? 'வணக்கம்! ' : 'Hello! ') + (cur.name || '') + ' — voice test.' } });
+    const url = URL.createObjectURL(await r.blob()); testAudio && testAudio.pause(); testAudio = new Audio(url); await testAudio.play(); $('#testState').textContent = '✓ Playing'; }
+  catch (e) { $('#testState').textContent = '✕ ' + e.message; }
+};
+
+/* ---------- PIN / WhatsApp ---------- */
+const appUrl = () => LS.get('reelAppUrl', SETTINGS.appUrl || DEF_APP);
+let pinMsg = '', pinPhone = '';
+function showPin(c, pin) {
+  $('#pinShow').innerHTML = `${esc(c.id)}<br><span style="font-size:22px">PIN ${esc(pin)}</span>`;
+  pinMsg = `Vanakkam ${c.name}! 🎬\n\nYour Property Reel Maker is ready.\nOpen: ${appUrl()}\nClient code: ${c.id}\nPIN: ${pin}\n\nPlan: ${(PLANS[c.plan] || {}).name || ''} – ${inr(c.planAmount)} / 30 days\n– Think Through Technology, 8015304105`;
+  pinPhone = (c.billingPhone || c.phone || '').replace(/\D/g, '').slice(-10); $('#pinMask').classList.add('on');
+}
+$('#pinCopy').onclick = () => navigator.clipboard.writeText(pinMsg).then(() => toast('Copied'), () => toast('Copy failed'));
+$('#pinWa').onclick = () => window.open('https://wa.me/' + (pinPhone ? '91' + pinPhone : '') + '?text=' + encodeURIComponent(pinMsg), '_blank');
+function remind(c) {
+  const phone = (c.billingPhone || c.phone || '').replace(/\D/g, '').slice(-10), st = c.sub.state;
+  const when = st === 'expired' ? `expired on ${fmtD(c.paidUntil)}` : st === 'grace' ? `expired on ${fmtD(c.paidUntil)} (${c.sub.graceLeft} grace day(s) left)` : `ends on ${fmtD(c.paidUntil)}`;
+  const msg = `Vanakkam ${c.name}! 🙏\n\nYour Property Reel Maker ${(PLANS[c.plan] || {}).name || ''} plan ${when}.\nRenewal: ${inr(c.planAmount)} for 30 days.\n\nPay online: open ${appUrl()} → log in → "Renew now"\nor UPI and send the screenshot here.\n\n– Think Through Technology, 8015304105`;
+  window.open('https://wa.me/' + (phone ? '91' + phone : '') + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ---------- pay / history ---------- */
+let payC = null;
+function openPay(c) { payC = c; $('#payWho').textContent = `${c.name} (${c.id}) · paid until ${fmtD(c.paidUntil)}`; $('#p_days').value = 30; $('#p_amount').value = c.planAmount || 0; $('#p_note').value = ''; updPayNew(); $('#payMask').classList.add('on'); }
+function updPayNew() { if (!payC) return; const base = Math.max(Date.now(), payC.paidUntil || 0); $('#payNew').textContent = 'New expiry: ' + fmtD(base + (Number($('#p_days').value) || 0) * 864e5); }
+$('#p_days').oninput = updPayNew;
+$('#payOk').onclick = async () => { $('#payOk').disabled = true; try { await api(`/api/admin/clients/${payC.id}/extend`, { method: 'POST', body: { days: Number($('#p_days').value), amount: Number($('#p_amount').value), method: $('#p_method').value, note: $('#p_note').value } }); $('#payMask').classList.remove('on'); await load(); toast('Payment added'); } catch (e) { toast(e.message); } $('#payOk').disabled = false; };
+let histC = null;
+async function openHist(c) {
+  histC = c; $('#histWho').textContent = `${c.name} (${c.id}) · paid until ${fmtD(c.paidUntil)}`; $('#histBody').innerHTML = '<p class="note">Loading…</p>'; $('#histMask').classList.add('on');
+  try { const { payments } = await api(`/api/admin/clients/${c.id}/payments`);
+    $('#histBody').innerHTML = payments.length ? `<table class="hist"><tr><th>Date</th><th>Method</th><th>Valid till</th><th class="n">Amount</th></tr>${payments.map(p => `<tr><td>${fmtD(p.at)}</td><td>${esc(p.method)}${p.note ? `<br><span class="note">${esc(p.note)}</span>` : ''}${p.ref ? `<br><span class="note">${esc(p.ref)}</span>` : ''}</td><td>${fmtD(p.until)}</td><td class="n">${inr(p.amount)}</td></tr>`).join('')}</table>` : '<p class="note">No payments yet.</p>';
+  } catch (e) { $('#histBody').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+}
+$('#setDateBtn').onclick = async () => {
+  if (!histC) return; const v = prompt('New expiry date (YYYY-MM-DD):', new Date(histC.paidUntil || Date.now()).toISOString().slice(0, 10)); if (!v) return;
+  const t = new Date(v + 'T23:59:00+05:30').getTime(); if (!t) { toast('Invalid date'); return; }
+  try { await api(`/api/admin/clients/${histC.id}/set-until`, { method: 'POST', body: { until: t } }); $('#histMask').classList.remove('on'); await load(); toast('Expiry updated'); } catch (e) { toast(e.message); }
+};
+
+/* ---------- settings ---------- */
+$('#setBtn').onclick = () => {
+  $('#defState').textContent = SETTINGS.hasDefaultKey ? `✓ Default key saved (••••${SETTINGS.defaultKeyLast4})` : 'No default key yet'; $('#defKey').value = '';
+  $('#appUrl').value = appUrl();
+  $('#cfState').innerHTML = SETTINGS.cashfree ? `✓ Cashfree connected (${esc(SETTINGS.cfEnv)} mode). Payments add 30 days automatically.` : 'Cashfree not connected. Add CF_APP_ID and CF_SECRET as Worker secrets (see README).';
+  $('#setMask').classList.add('on');
+};
+$('#appUrl').onchange = e => LS.set('reelAppUrl', e.target.value.trim());
+$('#defSave').onclick = async () => { const k = $('#defKey').value.trim(); if (!k.startsWith('sk_')) { toast('Paste the key that starts with sk_'); return; } try { await api('/api/admin/default-key', { method: 'POST', body: { key: k } }); SETTINGS = await api('/api/admin/settings'); PLANS = SETTINGS.plans; $('#defKey').value = ''; $('#defState').textContent = `✓ Default key saved (••••${SETTINGS.defaultKeyLast4})`; render(); } catch (e) { toast(e.message); } };
+$('#defClr').onclick = async () => { if (!confirm('Remove the default key? Clients without their own key lose AI voice.')) return; try { await api('/api/admin/default-key', { method: 'POST', body: { key: '' } }); SETTINGS = await api('/api/admin/settings'); PLANS = SETTINGS.plans; $('#defState').textContent = 'No default key'; render(); } catch (e) { toast(e.message); } };
+
+/* ---------- modals ---------- */
+document.querySelectorAll('.mask').forEach(m => m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.classList.remove('on'); }));
+if (API && TOKEN) boot();
+}
+</script>
+</body>
+</html>

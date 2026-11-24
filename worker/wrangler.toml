@@ -1,0 +1,20 @@
+name = "reel-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Create the KV namespace once:  npx wrangler kv namespace create DB
+# then paste the id it prints below.
+[[kv_namespaces]]
+binding = "DB"
+id = "PASTE_KV_NAMESPACE_ID_HERE"
+
+[vars]
+CF_ENV = "production"            # "sandbox" while testing Cashfree
+ALLOWED_ORIGINS = "https://maheshkumar040795-afk.github.io"
+APP_URL = "https://maheshkumar040795-afk.github.io/Property_Reel_Maker/"
+
+# Secrets (never put these in this file) — set with:
+#   npx wrangler secret put ADMIN_PASSWORD
+#   npx wrangler secret put SESSION_SECRET
+#   npx wrangler secret put CF_APP_ID
+#   npx wrangler secret put CF_SECRET
