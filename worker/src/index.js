@@ -84,7 +84,7 @@ async function usage(env, id) { return getJSON(env, `usage:${id}:${monthKey()}`,
 function publicClient(c, u, hasKey) {
   return {
     id: c.id, name: c.name, phone: c.phone, tagline: c.tagline, main: c.main, accent: c.accent, credit: c.credit,
-    logo: c.logo || '', lang: c.lang || 'en', template: c.template || 'classic', planAmount: c.planAmount || 0,
+    logo: c.logo || '', lang: c.lang || 'en', template: c.template || 'card', brandOnly: !!c.brandOnly, planAmount: c.planAmount || 0,
     plan: c.plan || 'basic', planName: (PLANS[c.plan] || PLANS.basic).name, extras: (PLANS[c.plan] || PLANS.basic).extras,
     reelLimit: c.reelLimit || 0, charLimit: c.charLimit || 0, aiVoice: !!c.aiVoice, voiceEnabled: !!(c.aiVoice && c.voiceId && hasKey), usage: u,
     sub: subStatus(c), payOnline: true, support: c.support || ''
@@ -260,6 +260,7 @@ async function adminRoute(req, env, p, m, body) {
     for (const f of fields) if (b[f] !== undefined) c[f] = typeof b[f] === 'string' ? b[f].slice(0, f === 'logo' ? 400000 : 2000) : b[f];
     if (b.plan && PLANS[b.plan] && (b.applyPlanDefaults || !prev)) { const P = PLANS[b.plan]; c.planAmount = P.amount; c.reelLimit = P.reels; c.charLimit = P.chars; c.aiVoice = P.aiVoice; }
     if (typeof b.aiVoice === 'boolean') c.aiVoice = b.aiVoice;
+    if (typeof b.brandOnly === 'boolean') c.brandOnly = b.brandOnly;
     if (!c.plan) c.plan = 'basic';
     if (b.shootDone !== undefined) c.shootDone = !!b.shootDone;
     for (const f of ['planAmount', 'reelLimit', 'charLimit', 'graceDays']) if (b[f] !== undefined && b[f] !== '') c[f] = Math.max(0, Number(b[f]) || 0);

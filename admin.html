@@ -155,8 +155,9 @@ input[type=color]{width:100%;height:40px;border:1.5px solid var(--line);border-r
         <button class="btn ghost sm" id="logoBtn">Upload logo</button><button class="btn ghost sm" id="logoClr">Remove</button>
         <input type="file" id="logoFile" accept="image/*" hidden>
       </div>
-      <label>Default style<select id="f_template"><option value="classic">Classic</option><option value="luxury">Luxury (black + gold)</option><option value="bright">Bright / Budget homes</option><option value="plots">Plots & Land (green)</option></select></label>
+      <label>Starting design<select id="f_template"><option value="shuffle">🎲 Random (different every time)</option><option value="card">Card</option><option value="split">Split</option><option value="magazine">Magazine</option><option value="bold">Bold</option><option value="minimal">Minimal</option><option value="frame">Polaroid</option></select></label>
       <label>Default language<select id="f_lang"><option value="en">English</option><option value="ta">Tamil</option></select></label>
+      <label class="toggle full"><input type="checkbox" id="f_brandOnly"> Use only brand colours (hide other colour sets)</label>
       <label class="full">Footer credit<input type="text" id="f_credit" value="Video by Think Through Technology"></label>
     </div>
   </div>
@@ -326,9 +327,10 @@ $('#planBox').onclick = e => { const b = e.target.closest('[data-p]'); if (!b) r
 function openEditor(c) {
   cur = c || null; $('#edErr').textContent = ''; $('#f_key').value = ''; $('#f_pin').value = '';
   $('#edTitle').textContent = c ? 'Edit ' + (c.name || c.id) : 'Add client';
-  const d = c || { planAmount: PLANS.basic.amount, reelLimit: PLANS.basic.reels, charLimit: 0, graceDays: 3, main: '#0E1B2A', accent: '#E8BB5C', template: 'classic', lang: 'en', credit: 'Video by Think Through Technology', model: 'eleven_multilingual_v2', support: 'Think Through Technology · 8015304105', status: 'active' };
+  const d = c || { planAmount: PLANS.basic.amount, reelLimit: PLANS.basic.reels, charLimit: 0, graceDays: 3, main: '#0E1B2A', accent: '#E8BB5C', template: 'shuffle', lang: 'en', credit: 'Video by Think Through Technology', model: 'eleven_multilingual_v2', support: 'Think Through Technology · 8015304105', status: 'active' };
   F.forEach(k => { const el = $('#f_' + k); if (el) el.value = d[k] ?? ''; });
-  curPlan = (c && c.plan) || 'basic'; $('#f_aiVoice').checked = c ? !!c.aiVoice : false; renderPlans();
+  if (!['shuffle','card','split','magazine','bold','minimal','frame'].includes($('#f_template').value)) $('#f_template').value = 'shuffle';
+  curPlan = (c && c.plan) || 'basic'; $('#f_aiVoice').checked = c ? !!c.aiVoice : false; $('#f_brandOnly').checked = c ? !!c.brandOnly : false; renderPlans();
   $('#f_id').disabled = !!c; $('#trialWrap').style.display = c ? 'none' : ''; $('#f_trialDays').value = 0;
   $('#pinLbl').textContent = c ? 'New PIN (blank = keep current)' : 'PIN (4–8 digits, blank = auto)';
   logoData = (c && c.logo) || ''; showLogo();
@@ -345,7 +347,7 @@ $('#logoFile').onchange = e => { const f = e.target.files[0]; if (!f) return; co
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); logoData = c.toDataURL('image/png'); if (logoData.length > 350000) logoData = c.toDataURL('image/jpeg', .85); showLogo(); URL.revokeObjectURL(img.src); };
   img.src = URL.createObjectURL(f); e.target.value = ''; };
 $('#saveBtn').onclick = async () => {
-  const b = { isNew: !cur, plan: curPlan, aiVoice: $('#f_aiVoice').checked, logo: logoData };
+  const b = { isNew: !cur, plan: curPlan, aiVoice: $('#f_aiVoice').checked, brandOnly: $('#f_brandOnly').checked, logo: logoData };
   F.forEach(k => { const el = $('#f_' + k); if (el) b[k] = el.value.trim(); }); b.id = b.id.toUpperCase();
   const pin = $('#f_pin').value.trim(); if (pin) b.pin = pin; if (!cur) b.trialDays = Number($('#f_trialDays').value) || 0;
   if (!b.name) { $('#edErr').textContent = 'Business name is required.'; return; }

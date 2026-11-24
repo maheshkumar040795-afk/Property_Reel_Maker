@@ -11,6 +11,12 @@ Browser tool that turns property photos, video clips and details into vertical (
 | `standalone.html` | Old version without login (for your own quick reels) |
 | `src/` | Source + build script for `index.html` |
 
+## Designs
+6 layouts (Card, Split, Magazine, Bold, Minimal, Polaroid) × 10 colour sets + brand colours × 3 fonts (Modern, Elegant, Bold).
+**Shuffle** picks a new combination; **New design after every video** (on by default) makes every reel look different.
+Admin → client → *Starting design* (or 🎲 Random) and *Use only brand colours*.
+**Cover image**: 1080×1920 JPG thumbnail for Instagram/YouTube/WhatsApp; the video can also start with it.
+
 ## Plans (enforced on the server)
 
 | Plan | ₹ / 30 days | Reels / month | Voice | Extras |
