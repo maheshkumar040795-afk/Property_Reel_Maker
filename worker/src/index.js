@@ -286,6 +286,46 @@ async function adminRoute(req, env, p, m, body) {
     if (action === 'payments' && m === 'GET') return json({ payments: await getJSON(env, `payments:${id}`, []) });
     if (action === 'reset-usage' && m === 'POST') { await env.DB.delete(`usage:${id}:${monthKey()}`); return json({ ok: true }); }
     if (action === 'logout-all' && m === 'POST') { c.pinVer = (c.pinVer || 1) + 1; await putJSON(env, `client:${id}`, c); return json({ ok: true }); }
+    if (action === 'clone' && m === 'POST') {
+      // Instant Voice Clone via ElevenLabs. Admin only. Consent is required and stored with the client.
+      const fd = await req.formData(); const files = fd.getAll('files').filter(f => f && typeof f === 'object' && f.size);
+      if (!files.length) fail('Add at least one recording.');
+      if (fd.get('consent') !== 'yes') fail("Confirm you have the person's permission to clone their voice.");
+      const total = files.reduce((a, f) => a + f.size, 0); if (total > 60 * 1024 * 1024) fail('Recordings are too large (max 60 MB). Use shorter takes.');
+      let voiceId, needsVerify = false;
+      if (env.MOCK_TTS === '1') voiceId = 'mock_' + rid(6);
+      else {
+        const key = await clientKey(env, id); if (!key) fail('No ElevenLabs key saved. Add it in ⚙ Settings first.');
+        const out = new FormData();
+        out.append('name', `${c.name || id} (${id})`.slice(0, 90));
+        out.append('description', `Property Reel Maker clone for ${c.name || id}. Consent: ${String(fd.get('consentNote') || '').slice(0, 300)}`);
+        out.append('remove_background_noise', fd.get('denoise') === 'yes' ? 'true' : 'false');
+        out.append('labels', JSON.stringify({ language: fd.get('lang') === 'en' ? 'en' : 'ta', accent: 'indian' }));
+        files.forEach((f, i) => out.append('files', f, f.name || `sample-${i + 1}.wav`));
+        const r = await fetch('https://api.elevenlabs.io/v1/voices/add', { method: 'POST', headers: { 'xi-api-key': key }, body: out });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) fail('ElevenLabs: ' + ((j.detail && (j.detail.message || j.detail.status)) || ('error ' + r.status)), 502);
+        voiceId = j.voice_id; needsVerify = !!j.requires_verification;
+      }
+      const old = c.clonedVoiceId || '';
+      c.voiceId = voiceId; c.clonedVoiceId = voiceId;
+      c.clone = { at: Date.now(), consent: String(fd.get('consentNote') || '').slice(0, 300), seconds: Number(fd.get('seconds')) || 0, needsVerify };
+      await putJSON(env, `client:${id}`, c);
+      if (old && old !== voiceId && fd.get('replace') === 'yes' && env.MOCK_TTS !== '1') {
+        const key = await clientKey(env, id); try { await fetch(`https://api.elevenlabs.io/v1/voices/${encodeURIComponent(old)}`, { method: 'DELETE', headers: { 'xi-api-key': key } }); } catch (e) { }
+      }
+      return json({ ok: true, voiceId, needsVerify, replaced: old });
+    }
+    if (action === 'clone-delete' && m === 'POST') {
+      const vid = c.clonedVoiceId; if (!vid) fail('This client has no cloned voice.');
+      if (env.MOCK_TTS !== '1') {
+        const key = await clientKey(env, id); if (!key) fail('No ElevenLabs key saved.');
+        const r = await fetch(`https://api.elevenlabs.io/v1/voices/${encodeURIComponent(vid)}`, { method: 'DELETE', headers: { 'xi-api-key': key } });
+        if (!r.ok && r.status !== 404) { let msg = 'ElevenLabs error ' + r.status; try { const j = await r.json(); msg = (j.detail && (j.detail.message || j.detail.status)) || msg; } catch (e) { } fail(msg, 502); }
+      }
+      if (c.voiceId === vid) c.voiceId = ''; c.clonedVoiceId = ''; c.clone = null;
+      await putJSON(env, `client:${id}`, c); return json({ ok: true });
+    }
     if (action === 'test-voice' && m === 'POST') {
       const { text } = await body(); if (!c.voiceId) fail('Set a Voice ID first.');
       if (env.MOCK_TTS === '1') return new Response(mockWav(text || 'test'), { headers: { 'content-type': 'audio/wav' } });

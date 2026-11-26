@@ -78,6 +78,17 @@ input[type=color]{width:100%;height:40px;border:1.5px solid var(--line);border-r
 .err{color:var(--bad);font-size:13px;min-height:18px}
 .warnline{font-size:12.5px;background:#FFF5E6;border:1px solid #F3D9A6;color:#7A5410;border-radius:10px;padding:8px 10px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;display:none;z-index:40}
+.clonebox{border:1.5px solid var(--line);border-radius:14px;padding:14px;background:#FBFCFD}
+.script{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14.5px;line-height:1.7;margin:10px 0;max-height:220px;overflow:auto;font-family:Poppins,"Noto Sans Tamil","Nirmala UI",sans-serif}
+.recbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.recbar .timer{font-weight:700;font-variant-numeric:tabular-nums;min-width:44px}
+.lvl{flex:1;min-width:80px;height:8px;border-radius:5px;background:#E8ECF1;overflow:hidden}.lvl i{display:block;height:100%;width:0;background:var(--ok);transition:width .08s}
+.take{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin-top:8px;background:#fff;font-size:13px}
+.take audio{height:32px;flex:1;min-width:120px}
+.btn.rec{background:var(--bad)}
+.tabs{display:flex;background:#EEF1F5;border-radius:10px;padding:3px;gap:3px;max-width:360px}
+.tabs button{flex:1;border:0;background:transparent;padding:7px 10px;border-radius:8px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 @media(max-width:860px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.grid3,.plans{grid-template-columns:1fr}main{padding:14px}header small{display:none}}
 </style>
 </head>
@@ -169,6 +180,29 @@ input[type=color]{width:100%;height:40px;border:1.5px solid var(--line);border-r
       <label class="full">Client's own API key (optional — blank uses your default key)
         <div class="keybox"><input type="password" id="f_key" placeholder="sk_… (write-only, never shown again)" autocomplete="off"><button class="btn ghost sm" id="keyClr">Remove</button></div>
         <span class="saved" id="keyState"></span></label>
+      <div class="full clonebox" id="cloneBox">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:14px">🎙 Clone this client's voice</b><span class="saved" id="cloneState"></span></div>
+        <p class="note" style="margin:4px 0 10px">Ask the client to read the script below for <b>1–2 minutes</b> in a quiet room (fan off), phone or mic 15–20 cm from the mouth, normal speaking voice. You can record here or upload WhatsApp voice notes / MP3s.</p>
+        <div class="tabs" id="scriptTabs"><button data-s="ta" class="on">தமிழ் script</button><button data-s="en">English script</button></div>
+        <div class="script" id="scriptBox"></div>
+        <div class="recbar">
+          <button class="btn sm" id="recBtn">⏺ Start recording</button>
+          <span class="timer" id="recTime">0:00</span>
+          <div class="lvl"><i id="recLvl"></i></div>
+          <button class="btn ghost sm" id="cloneUp">⬆ Upload audio</button>
+          <input type="file" id="cloneFile" accept="audio/*" multiple hidden>
+        </div>
+        <div id="takes"></div>
+        <div class="note" id="totalDur">Total: 0:00 · aim for 1:00–2:00</div>
+        <label class="toggle" style="margin-top:8px"><input type="checkbox" id="denoise" checked> Remove background noise</label>
+        <label class="toggle"><input type="checkbox" id="consent"> I have written permission from this person to clone their voice, only for their own reels.</label>
+        <input type="text" id="consentNote" placeholder="Consent proof (e.g. WhatsApp message from Ramesh Kumar, 26 Nov 2026)" style="margin-top:6px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <button class="btn green" id="cloneBtn">Create cloned voice</button>
+          <button class="btn red sm" id="cloneDel">Delete cloned voice</button>
+          <span class="note" id="cloneMsg"></span>
+        </div>
+      </div>
       <div class="full" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn ghost sm" id="testVoice">▶ Test voice</button><span class="note" id="testState">Save first, then test.</span></div>
     </div>
   </div>
@@ -301,7 +335,7 @@ function render() {
     return `<div class="cl" data-id="${esc(c.id)}">
       <div class="top"><div class="lg">${c.logo ? `<img src="${esc(c.logo)}">` : esc((c.name || c.id).slice(0, 2).toUpperCase())}</div>
         <div style="flex:1"><h3>${esc(c.name || c.id)}</h3><div class="code">Code: <b>${esc(c.id)}</b> · ${esc(c.phone || '')}</div></div></div>
-      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip ${st[0]}">● ${st[1]}</span><span class="chip plan">${esc(P.name || c.plan)} · ${inr(c.planAmount)}</span>${c.aiVoice ? `<span class="chip plan">🎙 AI voice${c.voiceId ? '' : ' (no Voice ID)'}</span>` : ''}</div>
+      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip ${st[0]}">● ${st[1]}</span><span class="chip plan">${esc(P.name || c.plan)} · ${inr(c.planAmount)}</span>${c.aiVoice ? `<span class="chip plan">🎙 AI voice${c.clonedVoiceId ? ' · cloned' : c.voiceId ? '' : ' (no voice yet)'}</span>` : ''}</div>
       <div class="dates"><span>Paid until: <b>${fmtD(c.paidUntil)}</b></span><span>${left}</span></div>
       <div class="meter"><div class="t"><span>Reels this month</span><b>${u.reels || 0} / ${c.reelLimit || '∞'}</b></div><div class="tr"><i class="${rPct >= 90 ? 'hi' : ''}" style="width:${rPct}%"></i></div></div>
       ${c.aiVoice ? `<div class="meter"><div class="t"><span>AI voice characters</span><b>${(u.chars || 0).toLocaleString('en-IN')} / ${c.charLimit ? c.charLimit.toLocaleString('en-IN') : '∞'}</b></div><div class="tr"><i class="${cPct >= 90 ? 'hi' : ''}" style="width:${cPct}%"></i></div></div>` : ''}
@@ -337,6 +371,7 @@ function openEditor(c) {
   $('#keyState').textContent = c && c.hasOwnKey ? `✓ Own key saved (••••${c.keyLast4 || ''})` : (SETTINGS.hasDefaultKey ? 'Using your default key' : 'No key — add a default key in Settings');
   $('#delBtn').style.display = c ? '' : 'none'; $('#kickBtn').style.display = c ? '' : 'none';
   $('#testState').textContent = c ? '' : 'Save first, then test.';
+  resetClone();
   $('#edMask').classList.add('on');
 }
 $('#addBtn').onclick = () => openEditor(null);
@@ -370,6 +405,86 @@ $('#testVoice').onclick = async () => {
   try { const r = await api(`/api/admin/clients/${cur.id}/test-voice`, { method: 'POST', body: { text: (cur.lang === 'ta' ? 'வணக்கம்! ' : 'Hello! ') + (cur.name || '') + ' — voice test.' } });
     const url = URL.createObjectURL(await r.blob()); testAudio && testAudio.pause(); testAudio = new Audio(url); await testAudio.play(); $('#testState').textContent = '✓ Playing'; }
   catch (e) { $('#testState').textContent = '✕ ' + e.message; }
+};
+
+
+/* ---------- voice cloning ---------- */
+const SCRIPTS = {
+  ta: n => `வணக்கம்! ${n || 'எங்கள் நிறுவனம்'}-க்கு உங்களை அன்புடன் வரவேற்கிறோம். சென்னையில் உங்கள் குடும்பத்திற்கு ஏற்ற வீட்டை, சரியான விலையில் கண்டுபிடிக்க நாங்கள் உதவுகிறோம்.\n\nஇன்று ஒரு அழகான இரண்டு படுக்கையறை கொண்ட தனி வீட்டை பார்க்கப் போகிறோம். ஹால் விசாலமாகவும், நல்ல வெளிச்சத்துடனும் இருக்கிறது. சமையலறை நவீனமாக உள்ளது. இரண்டு படுக்கையறைகளிலும் நல்ல காற்றோட்டம் உண்டு.\n\nஇந்த இடம் DTCP அனுமதி பெற்றது. முப்பது அடி சாலை வசதி உள்ளது. பள்ளி, கடைகள், பேருந்து நிறுத்தம் எல்லாம் சில நிமிட தூரத்தில் உள்ளன. விலை நாற்பத்தெட்டு லட்சம் மட்டுமே.\n\nபாதுகாப்பான முதலீடு அல்லது உங்கள் கனவு வீடு தேடுகிறீர்கள் என்றால், இது ஒரு அருமையான வாய்ப்பு. இலவச சைட் விசிட் பதிவு செய்ய இன்றே எங்களை அழையுங்கள். எங்கள் எண்: ஒன்பது எட்டு ஏழு ஆறு ஐந்து, நான்கு மூன்று இரண்டு ஒன்று பூஜ்யம். நன்றி!`,
+  en: n => `Hello and welcome to ${n || 'our company'}! We help families in Chennai find the right home at the right price.\n\nToday I'm showing you a beautiful two-bedroom independent house in a peaceful neighbourhood. The hall is spacious with plenty of natural light, the kitchen is modern and easy to maintain, and both bedrooms have good cross ventilation.\n\nThe property is DTCP approved, on a thirty-feet road, and schools, shops and bus stops are just a few minutes away. The price is only forty-eight lakhs.\n\nIf you are looking for a safe investment or your dream home, this is a great opportunity. Call us today to book your free site visit. We will guide you at every step, from choosing the property to completing the registration. Thank you, and see you at the site!`
+};
+let scriptLang = 'ta', takes = [], recSt = null;
+const fmtS = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function showScript() { $('#scriptBox').innerText = SCRIPTS[scriptLang]($('#f_name').value.trim()); document.querySelectorAll('#scriptTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === scriptLang)); }
+document.querySelectorAll('#scriptTabs button').forEach(b => b.onclick = () => { scriptLang = b.dataset.s; showScript(); });
+$('#f_name').addEventListener('input', showScript);
+function renderTakes() {
+  $('#takes').innerHTML = takes.map((t, i) => `<div class="take"><b>Take ${i + 1}</b><span class="note" style="margin:0">${t.dur ? fmtS(t.dur) : '?'}</span><audio controls src="${t.url}"></audio><button class="btn ghost sm" data-del="${i}">✕</button></div>`).join('');
+  const tot = takes.reduce((a, t) => a + (t.dur || 0), 0);
+  $('#totalDur').innerHTML = `Total: <b>${fmtS(tot)}</b> · ${tot < 30 ? '<span style="color:var(--bad)">too short — record at least 1 minute</span>' : tot < 60 ? '<span style="color:var(--due)">OK, but 1–2 minutes gives a better clone</span>' : '<span style="color:var(--ok)">✓ good length</span>'}`;
+}
+$('#takes').onclick = e => { const b = e.target.closest('[data-del]'); if (!b) return; const t = takes.splice(+b.dataset.del, 1)[0]; if (t) URL.revokeObjectURL(t.url); renderTakes(); };
+function toWav(buf) {
+  const sr = buf.sampleRate, n = buf.length, ch = buf.numberOfChannels, mono = new Float32Array(n);
+  for (let c = 0; c < ch; c++) { const d = buf.getChannelData(c); for (let i = 0; i < n; i++) mono[i] += d[i] / ch; }
+  const b = new ArrayBuffer(44 + n * 2), v = new DataView(b), w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) { const x = Math.max(-1, Math.min(1, mono[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7FFF, true); }
+  return new Blob([b], { type: 'audio/wav' });
+}
+let ac = null; const AC = () => ac || (ac = new (window.AudioContext || window.webkitAudioContext)());
+$('#recBtn').onclick = async () => {
+  if (recSt) { recSt.mr.stop(); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1 } }); }
+  catch (e) { $('#cloneMsg').textContent = 'Microphone permission was blocked.'; return; }
+  const mr = new MediaRecorder(stream), chunks = [], src = AC().createMediaStreamSource(stream), an = AC().createAnalyser(); an.fftSize = 1024; src.connect(an);
+  const data = new Float32Array(an.fftSize), t0 = Date.now();
+  const tick = () => { if (!recSt) return; an.getFloatTimeDomainData(data); let s = 0; for (const x of data) s += x * x; const rms = Math.sqrt(s / data.length);
+    $('#recLvl').style.width = Math.min(100, rms * 400) + '%'; $('#recLvl').style.background = rms > .2 ? 'var(--bad)' : 'var(--ok)'; $('#recTime').textContent = fmtS((Date.now() - t0) / 1000); requestAnimationFrame(tick); };
+  mr.ondataavailable = e => chunks.push(e.data);
+  mr.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop()); src.disconnect(); recSt = null; $('#recBtn').classList.remove('rec'); $('#recBtn').textContent = '⏺ Start recording'; $('#recLvl').style.width = '0';
+    try { const buf = await AC().decodeAudioData(await new Blob(chunks).arrayBuffer()); const blob = toWav(buf); takes.push({ blob, dur: buf.duration, url: URL.createObjectURL(blob), name: `take-${takes.length + 1}.wav` }); renderTakes(); }
+    catch (e) { $('#cloneMsg').textContent = 'Recording failed, please try again.'; }
+  };
+  AC().resume(); recSt = { mr }; mr.start(); $('#recBtn').classList.add('rec'); $('#recBtn').textContent = '⏹ Stop'; $('#cloneMsg').textContent = ''; tick();
+};
+$('#cloneUp').onclick = () => $('#cloneFile').click();
+$('#cloneFile').onchange = async e => {
+  for (const f of e.target.files) { let dur = 0; try { dur = (await AC().decodeAudioData(await f.arrayBuffer())).duration; } catch (x) { } takes.push({ blob: f, dur, url: URL.createObjectURL(f), name: f.name }); }
+  e.target.value = ''; renderTakes();
+};
+function cloneStatus() {
+  const c = cur; $('#cloneDel').style.display = c && c.clonedVoiceId ? '' : 'none';
+  $('#cloneState').textContent = c && c.clonedVoiceId ? `✓ Cloned ${c.clone ? fmtD(c.clone.at) : ''}${c.clone && c.clone.needsVerify ? ' · needs verification in ElevenLabs' : ''}` : '';
+  $('#cloneBtn').textContent = c && c.clonedVoiceId ? 'Replace cloned voice' : 'Create cloned voice';
+}
+function resetClone() { takes.forEach(t => URL.revokeObjectURL(t.url)); takes = []; renderTakes(); $('#consent').checked = false; $('#consentNote').value = ''; $('#cloneMsg').textContent = cur ? '' : 'Save the client first, then clone their voice.'; scriptLang = ($('#f_lang').value === 'en') ? 'en' : 'ta'; showScript(); cloneStatus(); }
+$('#cloneBtn').onclick = async () => {
+  const msg = $('#cloneMsg'); if (!cur) { msg.textContent = 'Save the client first.'; return; }
+  if (!takes.length) { msg.textContent = 'Record or upload the client reading the script first.'; return; }
+  const tot = takes.reduce((a, t) => a + (t.dur || 0), 0); if (tot && tot < 30) { msg.textContent = 'Too short — record at least 1 minute for a good clone.'; return; }
+  if (!$('#consent').checked) { msg.textContent = "Tick the permission box first — you need the person's written consent."; return; }
+  if (cur.clonedVoiceId && !confirm('Replace the current cloned voice? The old voice will be deleted from ElevenLabs.')) return;
+  const fd = new FormData(); takes.forEach((t, i) => fd.append('files', t.blob, t.name || `take-${i + 1}.wav`));
+  fd.append('consent', 'yes'); fd.append('consentNote', $('#consentNote').value.trim()); fd.append('denoise', $('#denoise').checked ? 'yes' : 'no');
+  fd.append('lang', scriptLang); fd.append('seconds', String(Math.round(tot))); if (cur.clonedVoiceId) fd.append('replace', 'yes');
+  $('#cloneBtn').disabled = true; msg.textContent = 'Creating cloned voice… (about 10–30 seconds)';
+  try {
+    const r = await fetch(API.replace(/\/+$/, '') + `/api/admin/clients/${cur.id}/clone`, { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN }, body: fd });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+    $('#f_voiceId').value = j.voiceId; Object.assign(cur, { voiceId: j.voiceId, clonedVoiceId: j.voiceId, clone: { at: Date.now(), needsVerify: j.needsVerify } }); cloneStatus();
+    msg.innerHTML = j.needsVerify ? '⚠ Clone created but ElevenLabs needs verification — open ElevenLabs → My Voices.' : '✓ Voice cloned and saved. Tap <b>▶ Test voice</b> to hear it.';
+    if (!$('#f_aiVoice').checked) msg.innerHTML += '<br>Note: AI voice is off for this client — choose Standard or Premium (or tick "AI voice allowed") and Save.';
+    await load(); cur = CLIENTS.find(x => x.id === cur.id) || cur;
+  } catch (e) { msg.textContent = '✕ ' + e.message; }
+  $('#cloneBtn').disabled = false;
+};
+$('#cloneDel').onclick = async () => {
+  if (!cur || !cur.clonedVoiceId || !confirm(`Delete ${cur.name}'s cloned voice from ElevenLabs? This frees the voice slot and cannot be undone.`)) return;
+  try { await api(`/api/admin/clients/${cur.id}/clone-delete`, { method: 'POST' }); $('#f_voiceId').value = ''; Object.assign(cur, { voiceId: '', clonedVoiceId: '', clone: null }); cloneStatus(); $('#cloneMsg').textContent = '✓ Cloned voice deleted.'; await load(); }
+  catch (e) { $('#cloneMsg').textContent = '✕ ' + e.message; }
 };
 
 /* ---------- PIN / WhatsApp ---------- */
